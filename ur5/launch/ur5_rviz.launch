@@ -1,0 +1,6 @@
+<launch>
+	<param name="robot_description" textfile="$(find ur5)/urdf/rviz/ur5.urdf" />
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+	<node name="rviz_joint_state_publisher" pkg="ur5" type="rviz_joint_state_publisher" />
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find ur5)/launch/urdf.rviz" required="true" />
+</launch>
