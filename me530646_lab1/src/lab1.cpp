@@ -85,7 +85,7 @@ Eigen::Matrix4f finv(Eigen::Matrix4f T){
 	
 	Eigen::Matrix4f invT = Eigen::Matrix4f::Identity(4,4);
 	Eigen::Matrix3f R = T.block<3,3>(0,0);
-	Eigen::Vector3f t = T.block<3,1>(0,2);
+	Eigen::Vector3f t = T.block<3,1>(0,3);
 	Eigen::Matrix3f R_t = R.transpose();
 	invT.block<3,3>(0,0) = R_t;
 	invT.block<3,1>(0,3) = -R_t*t;

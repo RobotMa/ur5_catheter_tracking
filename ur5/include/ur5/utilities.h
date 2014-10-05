@@ -16,15 +16,15 @@ class RvizPlotter{
 			tf::Transform transform;
 			RvizFrame(tf::Transform transform, std::string parentName, std::string childName);
 	};
-std::vector<RvizFrame> frames;
-std::vector<visualization_msgs::Marker> vectors;
-tf::TransformBroadcaster br;
-ros::Publisher pb;
-boost::thread *broadcastThread;
+	std::vector<RvizFrame> frames;
+	std::vector<visualization_msgs::Marker> vectors;
+	tf::TransformBroadcaster br;
+	ros::Publisher pb;
+	boost::thread *broadcastThread;
 
-void broadcast();
+	void broadcast();
 
-public:
+	public:
 	RvizPlotter();
 	RvizPlotter(ros::NodeHandle &n);
 	~RvizPlotter();
