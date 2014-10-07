@@ -130,10 +130,46 @@ int main(int argc, char **argv){
     std::cout << " (a) Done by hand \n" << std::endl;
 
     // (b) Plot 3 concatenated frames and animate
-    Eigen::Vector3f q = Eigen::MatrixXf::Random(3,1); 
+    Eigen::Vector3f q   = Eigen::MatrixXf::Random(3,1); 
     Eigen::Matrix4f H01 = Eigen::MatrixXf::Identity(4,4);
-    H01(0,3) = q(1);
+    Eigen::Matrix4f H12 = Eigen::MatrixXf::Identity(4,4);
+    Eigen::Matrix4f H23 = Eigen::MatrixXf::Identity(4,4);
 
-	
+    H01(0,3) = q(0);
+    H12.block<3,3>(0,0) = rollr(q(1));
+    H23.block<3,3>(0,0) = yawr(q(2));
 
+    p.plotf(H01, "Frame 1");
+    p.plotf(H12, "Frame 1", "Frame 2");
+    p.plotf(H23, "Frame 2", "Frame 3");
+    p.plotv("Frame 3", Eigen::Vector3f(0,0,0), Eigen::MatrixXf::Random(3,1));
+
+    const int n = 50;
+    const double ang_f = 5/4*pi;
+    const double step = ang_f/50;
+
+    for (int i = 0; i < 51; ++i)
+        {
+            q(0) = i*step;
+            q(1) = i*step;
+            q(2) = i*step;
+
+            H01(0,3) = q(0);
+            H12.block<3,3>(0,0) = rollr(q(1));
+            H23.block<3,3>(0,0) = yawr(q(2));
+
+            p.plotf(H01, "Frame 1");
+            p.plotf(H12, "Frame 1", "Frame 2");
+            p.plotf(H23, "Frame 2", "Frame 3");
+        }
+
+    // (c) Verify the animation
+    Eigen::Matrix4f T_test = Eigen::MatrixXf::Identity(4,4);
+    Eigen::Vector3f q_test(ang_f,ang_f,ang_f);
+
+    H01(0,3) = q_test(0);
+    H12.block<3,3>(0,0) = rollr(q_test(1));
+    H23.block<3,3>(0,0) = yawr(q_test(2));
+    T_test = H01*H12*H23;
+    p.plotf(T_test, "Frame T");
 }
