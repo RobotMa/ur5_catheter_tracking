@@ -6,6 +6,7 @@
 #include <Eigen/Eigenvalues>
 
 int main(int argc, char **argv){
+
 	//Initializing ROS
     ros::init(argc, argv, "lab1_main");
     ros::NodeHandle node;
@@ -119,18 +120,24 @@ int main(int argc, char **argv){
 
     // (b) Prove by example that xfinv(H) is numerically ill-defined for some
     // homogeneous transformations
-
+    std::cout << " (b) xfinv(H) is numerically for some homogeneous matrices because the Tait-Bryan angle representation becomes singular for certain angle combinations. \n" << std::endl;
     // (c)
-
+    Eigen::VectorXf twist = xfinv( xf(0,0,0,4*pi,0,0) );
+    std::cout <<" (c) (0,0,0,4*pi,0,0)^T is different from \n" << twist << std::endl << std::endl;
     // (d)
-
+    std::cout << " (d) is trivial since it is always possible to construct a homogenous transformation in SE(3) given 3 translations and 3 rotation angles. \n " << std::endl;
     /********************** Problem 5 ***********************/
     printf(" /********** Problem 5 **********/ \n \n");
     // (a) Done by hand and is trivial
     std::cout << " (a) Done by hand \n" << std::endl;
 
     // (b) Plot 3 concatenated frames and animate
-    Eigen::Vector3f q   = Eigen::MatrixXf::Random(3,1); 
+    std::cout << " (b) As shown in RVIZ \n" << std::endl;
+
+    // Create the x translation, row agnle and yaw angle
+    Eigen::Vector3f q   = Eigen::MatrixXf::Random(3,1);
+
+    // Initialize three homogeneous transformation
     Eigen::Matrix4f H01 = Eigen::MatrixXf::Identity(4,4);
     Eigen::Matrix4f H12 = Eigen::MatrixXf::Identity(4,4);
     Eigen::Matrix4f H23 = Eigen::MatrixXf::Identity(4,4);
@@ -139,11 +146,17 @@ int main(int argc, char **argv){
     H12.block<3,3>(0,0) = rollr(q(1));
     H23.block<3,3>(0,0) = yawr(q(2));
 
+    // Plot the three frames and three random vectors w.r.t. the last frame in 
+    // RVIZ
     p.plotf(H01, "Frame 1");
     p.plotf(H12, "Frame 1", "Frame 2");
     p.plotf(H23, "Frame 2", "Frame 3");
     p.plotv("Frame 3", Eigen::Vector3f(0,0,0), Eigen::MatrixXf::Random(3,1));
+    p.plotv("Frame 3", Eigen::Vector3f(0,0,0), Eigen::MatrixXf::Random(3,1));
+    p.plotv("Frame 3", Eigen::Vector3f(0,0,0), Eigen::MatrixXf::Random(3,1));
 
+
+    // Animate the movement of the three frames
     const int n = 50;
     const double ang_f = 5/4*pi;
     const double step = ang_f/50;
@@ -164,6 +177,7 @@ int main(int argc, char **argv){
         }
 
     // (c) Verify the animation
+    std::cout << " (c) As shown in RVIZ \n " << std::endl;
     Eigen::Matrix4f T_test = Eigen::MatrixXf::Identity(4,4);
     Eigen::Vector3f q_test(ang_f,ang_f,ang_f);
 
