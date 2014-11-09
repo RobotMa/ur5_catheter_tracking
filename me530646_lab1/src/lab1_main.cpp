@@ -14,18 +14,25 @@ int main(int argc, char **argv){
     //Creating an RvizPlotter
 	RvizPlotter p = RvizPlotter(node);
 	
-	/*****Examples of how to use necessary functions*****/
-	//Creates an 4x4 identity matrix
-	Eigen::Matrix4f T0 = Eigen::MatrixXf::Identity(4,4);
-	//Plot the identity matrix in rviz
-	p.plotf(T0,"Frame");
-	//Print out the matrix
-	printEigen(T0);
-	//Plot a vector
-	p.plotv("map", Eigen::Vector3f(0,0,0), Eigen::Vector3f(2,4,1));
+    /*****Examples of how to use necessary functions*****/
+
+    //Creates an 4x4identity matrix     
+    Eigen::Matrix4f T0 = Eigen::MatrixXf::Identity(4,4);
+	//Plot the identity matrix in rviz     
+	p.plotf(T0,"Frame");     //Print out the matrix     
+	printEigen(T0);     //Plot a vector     
+	p.plotv("map",Eigen::Vector3f(0,0,0), Eigen::Vector3f(2,4,1));
+
 	/****************************************************/
 
 	Eigen::Matrix4f T10 = xf(1, 1, 0, 0, 0, PI/2);
+	// auto T10 = xf(1, 1, 0, 0, 0, PI/2);
+
+	int x = 3;
+	// Note that "auto" onply applies to c++11 compiler which is not support by
+	// ROS Hydro nor ROS Indigo
+	// auto y = x;
+
 	printEigen(T10);
 	p.plotf(T10,"Frame","Frame1");
 
