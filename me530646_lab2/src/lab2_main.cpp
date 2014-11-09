@@ -12,7 +12,8 @@ int main(int argc, char **argv){
     ros::NodeHandle node;
     //Creating an RvizPlotter
 	RvizPlotter p = RvizPlotter(node);
-	
+
+
 	/********************** Problem 2 ***********************/
     printf(" /********** Problem 2 **********/ \n \n");
 
@@ -76,6 +77,7 @@ int main(int argc, char **argv){
     std::cout << "(e2) Eigenvectors of expV are \n"
               << esexp.eigenvectors()  << std::endl << std::endl; 
 
+
 	/********************** Problem 3 ***********************/
     printf(" /********** Problem 3 **********/ \n \n");
     // Create the action transformation
@@ -94,6 +96,7 @@ int main(int argc, char **argv){
     p.plotf(T2, "rotated frame");
 
     std::cout << "As shown in RVIZ \n " << std::endl;
+
 
     /********************** Problem 4 ***********************/
     printf(" /********** Problem 4 **********/ \n \n");
@@ -126,6 +129,8 @@ int main(int argc, char **argv){
     std::cout <<" (c) (0,0,0,4*pi,0,0)^T is different from \n" << twist << std::endl << std::endl;
     // (d)
     std::cout << " (d) is trivial since it is always possible to construct a homogenous transformation in SE(3) given 3 translations and 3 rotation angles. \n " << std::endl;
+
+
     /********************** Problem 5 ***********************/
     printf(" /********** Problem 5 **********/ \n \n");
     // (a) Done by hand and is trivial
