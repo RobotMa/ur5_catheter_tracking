@@ -1,0 +1,10 @@
+<robot name="upper_arm">
+	<link name="upper_arm_link" >
+		<visual>
+			<geometry>
+				<mesh filename="package://ur_description/meshes/ur5/visual/UpperArm.dae" />
+			</geometry>
+			<origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+		</visual>
+	</link>
+</robot>

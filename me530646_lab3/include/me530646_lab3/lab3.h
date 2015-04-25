@@ -3,6 +3,7 @@
 
 #include <Eigen/Core>
 #include <ros/ros.h>
+#include <sensor_msgs/JointState.h>
 
 class UR5 {
 //Creating a publisher for the forward kinematics
@@ -11,6 +12,17 @@ ros::Publisher fwd_pb;
 std::vector<std::string> link_names;
 //Plotter for rviz
 RvizPlotter rvizPlotter;
+//Creating a publisher for the forward kinematics
+ros::Publisher move_pb;
+//Creating publisher for hand control
+ros::Publisher hand_pb;
+//Creating service client for rviz jointstate 
+ros::ServiceClient simPos_client;
+//Creating subscriber for hardware jointstate  
+ros::ServiceClient realPos_client;
+
+
+
 
 	public:
 		//An array of the six alpha D-H parameters for the UR5
@@ -19,6 +31,8 @@ RvizPlotter rvizPlotter;
 		static double a[];
 		//An array of the six d D-H parameters for the UR5
 		static double d[];
+		//An array of the six joint angles of the UR5
+		double qCurrent[];
 		
 		/**
 		 * Creates an instance of the class to allow plotting 
@@ -37,11 +51,36 @@ RvizPlotter rvizPlotter;
 		void plotfwd(double q[]);
 
 		/**
+		 * Moves the UR5 hardware by defining desired joint angles.
+		 */
+		void movefwd(double q[]);
+
+		/**
+		 * Gets position of robot.
+		 */
+		void getPos(double *q);	
+
+		/**
+		 * Callback for receiving joint position from Rviz.
+		 */
+		void rvizPosCallback(const sensor_msgs::JointState state);	
+
+		/**
 		 * Plots the coordinate frames (according to D-H convention) for the
 		 * UR5 given a set of joint angles. Each frame is plotted relative to
 		 * fixed frame base_link.
 		 */	
 		void plotframes(double q[]);
+
+		/**
+		 * Close the UR5 gripper.
+		 */
+		void openHand();
+
+		/**
+		 * Open the UR5 gripper.
+		 */
+		void closeHand();
 
 		/**
 		 * Returns the 4x4 transformation given the a 4x1 vector of

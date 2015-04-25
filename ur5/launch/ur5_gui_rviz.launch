@@ -1,5 +1,7 @@
 <launch>
-	<param name="robot_description" textfile="$(find ur5)/urdf/rviz/ur5.urdf" />
+	<param name="robot_description" textfile="$(find ur5)/urdf/rviz/ur5_robot.urdf" />
+	
+	<!-- <param name="robot_description" textfile="$(find phantom_description)/urdf/phantom.urdf" /> -->
 	<param name="use_gui" value="True"/>
 	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
 	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />

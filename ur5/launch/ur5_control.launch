@@ -1,0 +1,5 @@
+<launch>
+  <node name="ur5_control_node" pkg="ur5" type="ur5_control" output="screen"/>
+  <node name="robot_interface_node" pkg="ur5" type="robot_interface"/>
+  <node name="getRealPos" pkg="ur5" type="getRealPos"/>
+</launch>

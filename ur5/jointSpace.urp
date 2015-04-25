@@ -1,0 +1,21 @@
+def jointControl():
+  ADDRESS = "127.0.0.1" #Machine IP
+  PORT = 5555
+  socket_open(ADDRESS, PORT)
+  while (True):
+    jointVals = socket_read_ascii_float(6)
+    if jointVals[0] < 6:
+      stopj(1.0)
+    else:
+      qs = [jointVals[1],
+      	     jointVals[2],
+	     jointVals[3],
+	     jointVals[4],
+	     jointVals[5],
+	     jointVals[6]]
+      # want a blend radius of 5 to 10 cm per the user guide
+      movej(qs, 3.0, 0.75, 0, 0.005)
+    end
+  end
+  socket_close()
+end

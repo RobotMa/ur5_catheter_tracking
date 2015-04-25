@@ -1,0 +1,10 @@
+<robot name="wrist_1">
+	<link name="wrist_1_link" >
+		<visual>
+			<geometry>
+				<mesh filename="package://ur_description/meshes/ur5/collision/Wrist1.dae" />
+			</geometry>
+			<origin xyz="0.0 0.093 0.0" rpy="0.0 0.0 0.0" />
+		</visual>
+	</link>
+</robot>

@@ -1,9 +1,15 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-
+<!-- 
+Modified by Qianli Ma 
+01/15/2015
+.dae -> .stl for collision/geometry/meshes
+-->
   <xacro:include filename="$(find ur_description)/urdf/ur5.transmission.xacro" />
   <xacro:include filename="$(find ur_description)/urdf/ur5.gazebo.xacro" />
+  <!-- materials.urdf.xacro 
   <xacro:include filename="$(find ur_description)/urdf/materials.urdf.xacro" />
+   -->
 <!--
 DH for UR5:
 a = [0.00000, -0.42500, -0.39225,  0.00000,  0.00000,  0.0000]
@@ -60,7 +66,7 @@ center_of_mass = [ [0, -0.02561, 0.00193], [0.2125, 0, 0.11336], [0.11993, 0.0, 
     </visual>
 	<collision>
       <geometry>
-        <mesh filename="package://ur_description/meshes/ur5/collision/Base.dae" />
+        <mesh filename="package://ur_description/meshes/ur5/collision/base.stl" />
       </geometry>
       <!-- <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 -0.009159"/> -->
     </collision>
@@ -87,7 +93,7 @@ center_of_mass = [ [0, -0.02561, 0.00193], [0.2125, 0, 0.11336], [0.11993, 0.0, 
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://ur_description/meshes/ur5/collision/Shoulder.dae" />
+        <mesh filename="package://ur_description/meshes/ur5/collision/shoulder.stl" />
       </geometry>
       <!-- <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 -0.009159"/> -->
     </collision>
@@ -116,7 +122,7 @@ center_of_mass = [ [0, -0.02561, 0.00193], [0.2125, 0, 0.11336], [0.11993, 0.0, 
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://ur_description/meshes/ur5/collision/UpperArm.dae" />
+        <mesh filename="package://ur_description/meshes/ur5/collision/upper_arm.stl" />
       </geometry>
 <!--       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.2125"/> -->
     </collision>
@@ -144,7 +150,7 @@ center_of_mass = [ [0, -0.02561, 0.00193], [0.2125, 0, 0.11336], [0.11993, 0.0, 
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://ur_description/meshes/ur5/collision/Forearm.dae" />
+        <mesh filename="package://ur_description/meshes/ur5/collision/forearm.stl" />
       </geometry>
 <!--       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.196125"/> -->
     </collision>
@@ -173,7 +179,7 @@ center_of_mass = [ [0, -0.02561, 0.00193], [0.2125, 0, 0.11336], [0.11993, 0.0, 
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://ur_description/meshes/ur5/collision/Wrist1.dae" />
+        <mesh filename="package://ur_description/meshes/ur5/collision/wrist_1.stl" />
       </geometry>
       <origin rpy="0.0 1.570796325 0.0" xyz="0.0 0.093 0.0"/>
     </collision>
@@ -202,7 +208,7 @@ center_of_mass = [ [0, -0.02561, 0.00193], [0.2125, 0, 0.11336], [0.11993, 0.0, 
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://ur_description/meshes/ur5/collision/Wrist2.dae" />
+        <mesh filename="package://ur_description/meshes/ur5/collision/wrist_2.stl" />
       </geometry>
        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.09465"/> 
     </collision>
@@ -230,7 +236,7 @@ center_of_mass = [ [0, -0.02561, 0.00193], [0.2125, 0, 0.11336], [0.11993, 0.0, 
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://ur_description/meshes/ur5/collision/Wrist3.dae" />
+        <mesh filename="package://ur_description/meshes/ur5/collision/wrist_3.stl" />
       </geometry>
     </collision>
     <inertial>

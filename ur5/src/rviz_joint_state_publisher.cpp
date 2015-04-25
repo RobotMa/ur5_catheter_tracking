@@ -32,7 +32,10 @@ int main(int argc, char **argv)
 	pb = n.advertise<sensor_msgs::JointState>("/joint_states", 10);
 	ros::Subscriber forwardSub = n.subscribe("forwardKinematics", 10, &forwardKinematicsCallback);
 
-	ros::Rate rate(100);
+	// test by Qianli Ma
+	ros::Rate rate(50);
+	// ros::Rate rate(100);
+
 
 	j.header.stamp = ros::Time::now();
 	j.header.seq = 1;
@@ -51,12 +54,20 @@ int main(int argc, char **argv)
 	j.position.push_back(0.0);
 	pb.publish(j);
 
+	// test by Qianli Ma
+	double shoulder = 0.0;
+
 	while(ros::ok())
   	{
       	//spin
 		ros::spinOnce();
 		j.header.stamp = ros::Time::now();
 		j.header.seq += 1;
+
+		// test by Qianli Ma
+		shoulder += 0.05;
+		j.position[0] = shoulder;
+
 		pb.publish(j);
 		rate.sleep();
     }

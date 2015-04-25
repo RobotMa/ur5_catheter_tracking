@@ -1,0 +1,1 @@
+There is a gap between Wrist2 and Wrist3 in the ur5.urdf file. 

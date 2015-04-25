@@ -1,0 +1,19 @@
+<launch>
+	
+	<!-- group ns="robot_0" if="true" -->
+		
+		<arg name="gui" default="True" />
+		<param name="robot_description" textfile="$(find phantom_description)/urdf/phantom.urdf" />
+		
+		<param name="use_gui" value="$(arg gui)" />
+		<!-- param name="robot_id" value="0" / -->
+		<!-- param name="tf_prefix" type="string" value="robot_0" / -->
+		<!-- <param name="robot_description" textfile="$(arg model)" /> -->
+
+
+		<node name="rviz" pkg="rviz" type="rviz" args="-d $(find phantom_description)/urdf.rviz" required="true" />
+		<!-- node name="robot_state_publisher_phantom" pkg="robot_state_publisher" type="state_publisher" / -->
+
+	<!-- /group -->
+
+</launch>

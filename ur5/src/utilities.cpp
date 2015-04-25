@@ -72,10 +72,6 @@ void RvizPlotter::broadcast(){
     boost::this_thread::interruption_point();
     for(int i = 0; i < frames.size(); i++){
       br.sendTransform(tf::StampedTransform(frames[i].transform, ros::Time::now(), frames[i].parentName, frames[i].childName));
-      double roll; 
-      double pitch; 
-      double yaw;
-      frames[i].transform.getBasis().getRPY(roll,pitch,yaw);
     }
     for(int i = 0; i < vectors.size(); i++){
       pb.publish(vectors[i]);
@@ -100,14 +96,31 @@ RvizPlotter::~RvizPlotter()
 {
   //Keep plotting around for long enough for tf to latch
   usleep(500000);
-  broadcastThread->interrupt();
+  try{
+    broadcastThread->interrupt();
+  } catch(boost::exception const&  ex)
+  {
+    ROS_ERROR("Interrupting thread causes exception.");
+  }
   broadcastThread->join();
   delete broadcastThread;
 }
 
-void printEigen(const Eigen::MatrixXf& m){
-  Eigen::IOFormat fmt(2, 0, ", ", "\n", "[", "]");
-  std::cout << m.format(fmt) << "\n" << std::endl;
+RvizPlotter::RvizPlotter(const RvizPlotter& other){
+  frames = other.frames;
+  vectors = other.vectors;
+  br = other.br;
+  pb = other.pb;
+  broadcastThread = other.broadcastThread;
+}
+
+RvizPlotter& RvizPlotter::operator=(const RvizPlotter& other){
+  frames = other.frames;
+  vectors = other.vectors;
+  br = other.br;
+  pb = other.pb;
+  broadcastThread = other.broadcastThread;
+  return *this;
 }
 
 Eigen::Matrix4f getTransformation(std::string parentName, std::string childName){

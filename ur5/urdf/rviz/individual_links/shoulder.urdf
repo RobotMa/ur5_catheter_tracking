@@ -1,0 +1,10 @@
+<robot name="shoulder">
+	<link name="shoulder_link" >
+		<visual>
+			<geometry>
+				<mesh filename="package://ur_description/meshes/ur5/visual/Shoulder.dae" />
+			</geometry>
+			<origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+		</visual>
+	</link>
+</robot>

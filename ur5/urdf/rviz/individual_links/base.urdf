@@ -1,0 +1,10 @@
+<robot name="base">
+	<link name="base_link" >
+		<visual>
+			<geometry>
+				<mesh filename="package://ur_description/meshes/ur5/visual/Base.dae" />
+			</geometry>
+			<origin xyz="0.0 0.0 0.003" rpy="0.0 0.0 2.3562" />
+		</visual>
+	</link>
+</robot>

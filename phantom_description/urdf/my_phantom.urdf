@@ -1,0 +1,16 @@
+<robot name="my_phantom">
+	<link name="base_link">
+		<visual>
+			<geometry>
+				<!-- Unit : Inch -->
+				<!-- <box size="8.5 8.5 3"/> -->
+				<!-- Unit : Meter -->
+				<box size="0.2159 0.2159 0.0762" />
+			</geometry>
+			<material name="yellow">
+				<color rgba="255 255 0 0.5" />
+			</material>
+			<origin rpy="0 0 0" xyz="0.5 0 0.0381" />
+		</visual>
+	</link>
+</robot>
