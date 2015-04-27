@@ -5,6 +5,7 @@
 #include <me530646_lab3/lab3.h>
 #include <me530646_lab4/lab4.h>
 #include <ur_kinematics/ur_kin.h>
+#include <iostream>
 
 int main(int argc, char **argv){
 	ros::init(argc,argv,"lab3");
@@ -22,7 +23,18 @@ int main(int argc, char **argv){
 	{
 		q_sol[i] = new double[6];
 	}
-	int num_sol = inverse(UR5::fwd(q),q_sol);
+	int num_sol = inverse(UR5::fwd(q), q_sol);
+
+	for (int i = 0; i < 8; ++i)
+	{
+		for (int j = 0; j < 6; ++j)
+		{
+			std::cout << q_sol[i][j] << " ";
+			if ( j == 5)
+			{
+				std::cout << "\n";
+			}
+		}
+	}
+	std::cout << num_sol << std::endl;
   }
-
-
