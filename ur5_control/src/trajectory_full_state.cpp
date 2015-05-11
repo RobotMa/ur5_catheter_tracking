@@ -190,8 +190,7 @@ int main( int argc, char** argv ){
             // while ROS message is used for communication between publisher/subscriber
             // broadcaster etc.
             current_pose.setOrigin( transform.getOrigin() );
-            current_pose.setRotation( transform.getRotation() );
-
+            current_pose.setRotation( transform.getRotation() );s
             /* This is used to initialize the position (a small hack)*/
             if( readinitpose ){
                 setpose = current_pose;
