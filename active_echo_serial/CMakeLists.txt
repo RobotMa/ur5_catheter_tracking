@@ -4,7 +4,13 @@ project(active_echo_serial)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+	roscpp
+	rospy
+	std_msgs
+	message_generation
+)
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -40,11 +46,11 @@ find_package(catkin REQUIRED)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
+add_message_files(
+  FILES
+  Num.msg
 #   Message2.msg
-# )
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -61,10 +67,10 @@ find_package(catkin REQUIRED)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs  # Or other packages containing msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -78,7 +84,7 @@ find_package(catkin REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES active_echo_serial
-#  CATKIN_DEPENDS other_catkin_pkg
+ CATKIN_DEPENDS message_runtime
 #  DEPENDS system_lib
 )
 
@@ -96,16 +102,16 @@ catkin_package(
 # )
 
 ## Declare a cpp executable
-# add_executable(active_echo_serial_node src/active_echo_serial_node.cpp)
+add_executable(active_echo_serial src/active_echo_serial.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(active_echo_serial_node active_echo_serial_generate_messages_cpp)
+add_dependencies(active_echo_serial active_echo_serial_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(active_echo_serial_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(active_echo_serial
+  ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
