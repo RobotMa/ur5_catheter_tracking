@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>ur5_control</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>This package deals with simple position control and rviz visualization of UR5.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 

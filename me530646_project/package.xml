@@ -13,7 +13,7 @@
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>TODO</license>
+  <license>BSD</license>
 
 
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
@@ -43,13 +43,13 @@
   <build_depend>me530646_lab1</build_depend>
   <build_depend>me530646_lab2</build_depend>
   <build_depend>me530646_lab3</build_depend>
-  <build_depend>me530646_lab4</build_depend>
+  <build_depend>inverse_ur5</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>ur5</build_depend>
   <run_depend>me530646_lab1</run_depend>
   <run_depend>me530646_lab2</run_depend>
   <run_depend>me530646_lab3</run_depend>
-  <run_depend>me530646_lab4</run_depend>
+  <run_depend>inverse_ur5</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>ur5</run_depend>
 

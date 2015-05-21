@@ -17,15 +17,15 @@ class RvizPlotter{
 			tf::Transform transform;
 			RvizFrame(tf::Transform transform, std::string parentName, std::string childName);
 	};
-std::vector<RvizFrame> frames;
-std::vector<visualization_msgs::Marker> vectors;
-tf::TransformBroadcaster br;
-ros::Publisher pb;
-boost::thread *broadcastThread;
+	std::vector<RvizFrame> frames;
+	std::vector<visualization_msgs::Marker> vectors;
+	tf::TransformBroadcaster br;
+	ros::Publisher pb;
+	boost::thread *broadcastThread;
 
-void broadcast();
+	void broadcast();
 
-public:
+	public:
 	RvizPlotter();
 	RvizPlotter(ros::NodeHandle &n);
 	RvizPlotter(const RvizPlotter& other);
@@ -38,19 +38,19 @@ public:
 };
 template<typename Derived>
 void printEigen(const Eigen::MatrixBase<Derived>& m){
-  Eigen::IOFormat fmt(2, 0, ", ", "\n", "[", "]");
-  std::cout << m.format(fmt) << "\n" << std::endl;
+	Eigen::IOFormat fmt(2, 0, ", ", "\n", "[", "]");
+	std::cout << m.format(fmt) << "\n" << std::endl;
 }
 
 template<typename Derived>
 void initEigen(const Eigen::MatrixBase<Derived>& m){
-  Eigen::IOFormat fmt(Eigen::StreamPrecision, 1, ", ", ", ", "", "", " << ", ";");
-  std::cout << m.format(fmt) << "\n" << std::endl;
+	Eigen::IOFormat fmt(Eigen::StreamPrecision, 1, ", ", ", ", "", "", " << ", ";");
+	std::cout << m.format(fmt) << "\n" << std::endl;
 }
 
 Eigen::Matrix4f  getTransformation(std::string parentName, std::string childName);
 
-template<typename Derived>
+	template<typename Derived>
 bool matrixEquals(const Eigen::MatrixBase<Derived>& m1, const Eigen::MatrixBase<Derived>& m2)
 {
 	if(m1.rows() != m2.rows() || m1.cols() != m2.cols())

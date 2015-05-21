@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   me530646_lab1
   me530646_lab2
   me530646_lab3
-  me530646_lab4
+  inverse_ur5
   roscpp
   ur5
 )

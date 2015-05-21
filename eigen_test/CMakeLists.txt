@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(me530646_lab0)
+project(eigen_test)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -106,7 +106,7 @@ include_directories(
 
 ## Declare a cpp executable
 # add_executable(me530646_lab0_node src/me530646_lab0_node.cpp)
-add_executable(lab0_main src/lab0_main.cpp)
+add_executable(eigen_test_main src/eigen_test_main.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -117,7 +117,7 @@ add_executable(lab0_main src/lab0_main.cpp)
 #   ${catkin_LIBRARIES}
 # )
 
-target_link_libraries(lab0_main
+target_link_libraries(eigen_test_main
   ${catkin_LIBRARIES}
 )
 

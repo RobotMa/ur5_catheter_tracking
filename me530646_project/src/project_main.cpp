@@ -4,7 +4,7 @@
 #include <me530646_lab1/lab1.h>
 #include <me530646_lab2/lab2.h>
 #include <me530646_lab3/lab3.h>
-#include <me530646_lab4/lab4.h>
+#include <inverse_ur5/lab4.h>
 
 #define PI M_PI
 

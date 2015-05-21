@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(me530646_lab4)
+project(inverse_ur5)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -88,7 +88,7 @@ find_package(Eigen REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES me530646_lab4
+  LIBRARIES inverse_ur5
 #  CATKIN_DEPENDS me530646_lab1 me530646_lab2 me530646_lab3 roscpp std_msgs tf ur5 ur_kinematics
 #  DEPENDS system_lib
 )
@@ -107,8 +107,8 @@ include_directories(
 )
 
 ## Declare a cpp library
-add_library(me530646_lab4 src/lab4.cpp)
-target_link_libraries(me530646_lab4 ${catkin_LIBRARIES})
+add_library(inverse_ur5 src/lab4.cpp)
+target_link_libraries(inverse_ur5 ${catkin_LIBRARIES})
 
 ## Declare a cpp executable
 # add_executable(me530646_lab4_node src/me530646_lab4_node.cpp)
