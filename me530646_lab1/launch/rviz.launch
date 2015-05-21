@@ -1,4 +1,0 @@
-<launch>
-	<node name="rviz_joint_state_publisher" pkg="ur5" type="rviz_joint_state_publisher" />
-	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find me530646_lab1)/launch/conf.rviz" required="true" />
-</launch>

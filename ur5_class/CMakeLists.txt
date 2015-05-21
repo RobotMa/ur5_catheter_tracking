@@ -1,12 +1,16 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(eigen_test)
+project(ur5_class)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  tf
   ur5
+  std_msgs
+  rviz_plot
+  rviz_animate
 )
 
 find_package(Eigen REQUIRED)
@@ -81,9 +85,9 @@ find_package(Eigen REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES eigen_test
-#  CATKIN_DEPENDS roscpp
+ INCLUDE_DIRS include
+ LIBRARIES ur5_class
+#  CATKIN_DEPENDS roscpp tf ur5
 #  DEPENDS system_lib
 )
 
@@ -95,31 +99,27 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
-# add_library(eigen_test
-#   src/${PROJECT_NAME}/eigen_test.cpp
-# )
+add_library(ur5_class src/lab3.cpp)
+target_link_libraries(ur5_class ${catkin_LIBRARIES})
 
 ## Declare a cpp executable
-# add_executable(eigen_test_node src/eigen_test_node.cpp)
-add_executable(eigen_test_main src/eigen_test_main.cpp)
+add_executable(lab3_main src/lab3_main.cpp src/lab3.cpp)
+target_link_libraries(lab3_main ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(eigen_test_node eigen_test_generate_messages_cpp)
+# add_dependencies(ur5_class_node me530646_lab3_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(eigen_test_node
+# target_link_libraries(ur5_class_node
 #   ${catkin_LIBRARIES}
 # )
-
-target_link_libraries(eigen_test_main
-  ${catkin_LIBRARIES}
-)
 
 #############
 ## Install ##
@@ -136,7 +136,7 @@ target_link_libraries(eigen_test_main
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS eigen_test eigen_test_node
+# install(TARGETS ur5_class me530646_lab3_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -161,7 +161,7 @@ target_link_libraries(eigen_test_main
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_eigen_test.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_ur5_class.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

@@ -5,9 +5,9 @@ project(inverse_ur5)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  me530646_lab1
-  me530646_lab2
-  me530646_lab3
+  rviz_plot
+  rviz_animate
+  ur5_class
   roscpp
   std_msgs
   tf
@@ -89,7 +89,7 @@ find_package(Eigen REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES inverse_ur5
-#  CATKIN_DEPENDS me530646_lab1 me530646_lab2 me530646_lab3 roscpp std_msgs tf ur5 ur_kinematics
+#  CATKIN_DEPENDS me530646_lab1 rviz_animate ur5_class roscpp std_msgs tf ur5 ur_kinematics
 #  DEPENDS system_lib
 )
 

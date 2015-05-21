@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>inverse_ur5</name>
+  <name>rviz_plot</name>
   <version>1.0.0</version>
-  <description>This ur5_inverse_test package is forked from the course me530646</description>
+  <description>The rviz_plot package is forked from the course me530646.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/me530646_lab4</url> -->
+  <!-- <url type="website">http://wiki.ros.org/me530646_lab1</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
@@ -40,23 +40,10 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>rviz_plot</build_depend>
-  <build_depend>rviz_animate</build_depend>
-  <build_depend>ur5_class</build_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>ur5</build_depend>
-  <build_depend>ur_kinematics</build_depend>
-  <run_depend>rviz_plot</run_depend>
-  <run_depend>rviz_animate</run_depend>
-  <run_depend>ur5_class</run_depend>
   <run_depend>roscpp</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>tf</run_depend>
+  <build_depend>ur5</build_depend>
   <run_depend>ur5</run_depend>
-  <run_depend>ur_kinematics</run_depend>
-
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

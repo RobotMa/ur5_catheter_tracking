@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(eigen_test)
+project(rviz_plot)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -81,8 +81,8 @@ find_package(Eigen REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES eigen_test
+  INCLUDE_DIRS include
+  LIBRARIES rviz_plot
 #  CATKIN_DEPENDS roscpp
 #  DEPENDS system_lib
 )
@@ -95,29 +95,30 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
-# add_library(eigen_test
-#   src/${PROJECT_NAME}/eigen_test.cpp
-# )
+add_library(rviz_plot src/lab1.cpp)
+target_link_libraries(rviz_plot ${catkin_LIBRARIES})
 
 ## Declare a cpp executable
-# add_executable(eigen_test_node src/eigen_test_node.cpp)
-add_executable(eigen_test_main src/eigen_test_main.cpp)
+# add_executable(rviz_plot_node src/me530646_lab1_node.cpp)
+
+add_executable(lab1_main src/lab1_main.cpp src/lab1.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(eigen_test_node eigen_test_generate_messages_cpp)
+# add_dependencies(rviz_plot_node me530646_lab1_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(eigen_test_node
+# target_link_libraries(rviz_plot_node
 #   ${catkin_LIBRARIES}
 # )
 
-target_link_libraries(eigen_test_main
+target_link_libraries(lab1_main
   ${catkin_LIBRARIES}
 )
 
@@ -136,7 +137,7 @@ target_link_libraries(eigen_test_main
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS eigen_test eigen_test_node
+# install(TARGETS rviz_plot me530646_lab1_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -161,7 +162,7 @@ target_link_libraries(eigen_test_main
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_eigen_test.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_rviz_plot.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

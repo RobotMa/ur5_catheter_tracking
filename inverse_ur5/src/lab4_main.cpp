@@ -1,8 +1,8 @@
 #include <Eigen/Core>
 #include <ur5/utilities.h>
-#include <me530646_lab1/lab1.h>
-#include <me530646_lab2/lab2.h>
-#include <me530646_lab3/lab3.h>
+#include <rviz_plot/lab1.h>
+#include <rviz_animate/lab2.h>
+#include <ur5_class/lab3.h>
 #include <inverse_ur5/lab4.h>
 #include <ur_kinematics/ur_kin.h>
 #include <iostream>
