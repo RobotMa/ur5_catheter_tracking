@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+
+	<node pkg  = "active_echo_serial" 
+	      type = "active_echo_serial"
+	      name = "active_echo_serial">
+	</node>
+
+	<node pkg  = "active_echo_serial"
+	      type = "segment_image"
+              name = "segment_image">
+	</node>
+
+</launch>

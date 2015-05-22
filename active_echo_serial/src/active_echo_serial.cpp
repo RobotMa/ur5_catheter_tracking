@@ -1,5 +1,6 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+
 // Include custom message
 #include <active_echo_serial/Num.h>
 
@@ -12,7 +13,7 @@
 #include <termios.h> /* POSIX terminal control definitions */
 #include <sys/ioctl.h>
 #include <iostream>
-#include <stdlib.h>     /* atoi */
+#include <stdlib.h>  /* atoi */
 
 int open_port(std::string& port)
 {   
@@ -193,7 +194,6 @@ int main(int argc, char **argv)
 	// Set the buad rate, data bits and stop bit
 	setup_port(fd, 115200, 8, 1, false, false);
 
-	//
 	ros::init(argc, argv, "active_echo_publisher");
 
 	ros::NodeHandle n;

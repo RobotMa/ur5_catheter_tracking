@@ -7,6 +7,7 @@ project(active_echo_serial)
 find_package(catkin REQUIRED COMPONENTS
 	roscpp
 	rospy
+	tf
 	std_msgs
 	message_generation
 )
@@ -103,13 +104,18 @@ catkin_package(
 
 ## Declare a cpp executable
 add_executable(active_echo_serial src/active_echo_serial.cpp)
+add_executable(segment_image src/segment_image.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(active_echo_serial active_echo_serial_generate_messages_cpp)
+add_dependencies(segment_image active_echo_serial_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(active_echo_serial
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(segment_image
   ${catkin_LIBRARIES}
 )
 

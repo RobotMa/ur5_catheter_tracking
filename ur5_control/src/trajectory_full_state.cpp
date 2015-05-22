@@ -13,12 +13,12 @@
 
 
 // global list to hold the setposes. Not very thread safe but it's fine.
-// ** Pose is a data structure composed of Point position and Quaternion
+// **In ROS, Pose is a data structure composed of Point position and Quaternion
 // orientation.
 // Whehther list can acccept the Pose data structure is to be tested
 std::list< geometry_msgs::Pose > poselist;
 
-// This callback is triggered each time that a set pose is published.
+// This callback function is triggered each time that a set of pose is published.
 // The only thing it does is to copy the received 6D pose to the list
 // of poses
 // Input: a new set pose (6D pose)
@@ -27,7 +27,7 @@ void callback( const geometry_msgs::Pose& newpose ){
     poselist.push_back( newpose );
 }
 
-// This callback_joint_states is triggered each time that joint state
+// This callback_joint_states function is triggered each time when a joint state
 // is published by the ur_driver. The only thing it does to initialize
 // the initial joint state of the UR5 urdf model in RVIZ ??
 sensor_msgs::JointState jointstate_init;
