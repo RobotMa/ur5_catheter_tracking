@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   ur5
 )
 
+find_package(cmake_modules REQUIRED) # Required by Indigo
 find_package(Eigen REQUIRED)
 
 ## System dependencies are found with CMake's conventions

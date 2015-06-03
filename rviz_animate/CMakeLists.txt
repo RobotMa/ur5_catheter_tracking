@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   rviz_plot
 )
 
+find_package(cmake_modules REQUIRED) # Required by Indigo 
 find_package(Eigen REQUIRED)
 
 ## System dependencies are found with CMake's conventions

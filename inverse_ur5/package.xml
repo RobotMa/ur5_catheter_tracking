@@ -48,6 +48,7 @@
   <build_depend>tf</build_depend>
   <build_depend>ur5</build_depend>
   <build_depend>ur_kinematics</build_depend>
+  <build_depend>Eigen</build_depend> <!--Required by Indigo -->
   <run_depend>rviz_plot</run_depend>
   <run_depend>rviz_animate</run_depend>
   <run_depend>ur5_class</run_depend>
