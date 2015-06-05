@@ -1,4 +1,5 @@
 #include <Eigen/Core>
+#include <Eigen/Dense>
 #include <ur5/utilities.h>
 #include <unsupported/Eigen/MatrixFunctions>
 #include <rviz_plot/lab1.h>
@@ -82,12 +83,12 @@ int main(int argc, char **argv){
 	printf(" /********** Problem 3 **********/ \n \n");
 	// Create the action transformation
 	Eigen::Matrix4f T = Eigen::MatrixXf::Identity(4,4);
-	T.block<3,3>(0,0) = expr(v);
+    T.block<3,3>(0,0) = expr(v);
 
 	// Create the base frame
 	Eigen::Vector3f v1 = Eigen::MatrixXf::Random(3,1);
 	Eigen::Matrix4f T1 = Eigen::MatrixXf::Identity(4,4);
-	T1.block<3,3>(0,0) = expr(v1);
+    T1.block<3,3>(0,0) = expr(v1);
 	// Compute the rotated & transformed base frame
 	Eigen::Matrix4f T2 = T*T1;
 	// Plot the base frame and the rotated frame in RVIZ

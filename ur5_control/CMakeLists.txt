@@ -13,8 +13,16 @@ find_package(catkin REQUIRED COMPONENTS
   trajectory_msgs
   control_msgs
   tf
+  tf_conversions
   ur_description
+  ur5
+  rviz_plot
+  rviz_animate
+  ur5_class
+  inverse_ur5
 )
+
+find_package(Eigen REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -101,6 +109,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${Eigen_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -110,6 +119,7 @@ include_directories(
 
 ## Declare a cpp executable
 add_executable( trajectory src/trajectory.cpp)
+add_executable( trajectory_full_state src/trajectory_full_state.cpp)
 # add_executable( ur5_trajectory src/ur5_trajectory.cpp)
 
 ## Add cmake target dependencies of the executable/library
@@ -118,6 +128,7 @@ add_executable( trajectory src/trajectory.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries( trajectory ${catkin_LIBRARIES} )
+target_link_libraries( trajectory_full_state ${catkin_LIBRARIES})
 # target_link_libraries( ur5_trajectory ${catkin_LIBRARIES} )
 
 #############

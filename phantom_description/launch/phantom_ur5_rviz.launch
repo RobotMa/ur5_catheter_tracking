@@ -17,6 +17,6 @@
 
 	</group>
 
-	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find sensor_description)/urdf.rviz" required="true" />
+	<!-- node name="rviz" pkg="rviz" type="rviz" args="-d $(find sensor_description)/urdf.rviz" required="true" /-->
 
 </launch>

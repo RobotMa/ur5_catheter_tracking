@@ -1,7 +1,16 @@
 #include <ros/ros.h>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <unsupported/Eigen/MatrixFunctions>
 
 #include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
+
+#include <tf_conversions/tf_eigen.h>
+
+#include <inverse_ur5/lab4.h>
+#include <ur_kinematics/ur_kin.h>
+
 
 #include <std_msgs/Bool.h>
 #include <sensor_msgs/JointState.h>
@@ -16,15 +25,32 @@
 // **In ROS, Pose is a data structure composed of Point position and Quaternion
 // orientation.
 // Whehther list can acccept the Pose data structure is to be tested
-std::list< geometry_msgs::Pose > poselist;
+// The answer seems to be : NO.
+// Define lists for translation and rotation separately
+std::list< geometry_msgs::Point > pointlist;
+std::list< geometry_msgs::Quaternion > quaternionlist;
 
 // This callback function is triggered each time that a set of pose is published.
 // The only thing it does is to copy the received 6D pose to the list
 // of poses
 // Input: a new set pose (6D pose)
 void callback( const geometry_msgs::Pose& newpose ){
-    std::cout << "New pose\n" << newpose << std::endl;
-    poselist.push_back( newpose );
+    geometry_msgs::Point newpoint;
+    geometry_msgs::Quaternion newquaternion;
+
+    newpoint.x = newpose.position.x;
+    newpoint.y = newpose.position.y;
+    newpoint.z = newpose.position.z;
+
+    newquaternion.x = newpose.orientation.x;
+    newquaternion.y = newpose.orientation.y;
+    newquaternion.z = newpose.orientation.z;
+    newquaternion.w = newpose.orientation.w;
+
+    std::cout << "New point\n" << newpoint << std::endl;
+    std::cout << "New quaternion\n" << newquaternion << std::endl;
+    pointlist.push_back( newpoint );
+    quaternionlist.push_back( newquaternion );
 }
 
 // This callback_joint_states function is triggered each time when a joint state
@@ -124,6 +150,7 @@ int main( int argc, char** argv ){
 
     // Create a publisher that will publish joint states on the topic
     // /joint_states
+
     // The publisher will publish to /joint_trajectory at the end of
     // of the main function after completing all the computation.
     // The size of publishing queue is 1 which means it will only buffer
@@ -190,8 +217,8 @@ int main( int argc, char** argv ){
             // while ROS message is used for communication between publisher/subscriber
             // broadcaster etc.
             current_pose.setOrigin( transform.getOrigin() );
-            current_pose.setRotation( transform.getRotation() );s
-            /* This is used to initialize the position (a small hack)*/
+            current_pose.setRotation( transform.getRotation() );
+            /* This is used to initialize the pose (a small hack)*/
             if( readinitpose ){
                 setpose = current_pose;
                 readinitpose = false;
@@ -203,13 +230,22 @@ int main( int argc, char** argv ){
 
         // If the list is not empty,
         // Read a setpose from the list and keep both the translation and rotation
-        if( !poselist.empty() ){
-            // setpose setX( poselist.front().x );
-            // setpose.setY( poselist.front().y );
-            // setpose.setZ( poselist.front().z );
-            setpose.setOrigin( poselist.front().Point );
-            setpose.setRotation( poselist.front().Quaternion );
-            poselist.pop_front();
+        if( !pointlist.empty() && !quaternionlist.empty() ){
+
+            // set origin of the goal pose
+            double x_f = pointlist.front().x;
+            double y_f = pointlist.front().y;
+            double z_f = pointlist.front().z;
+            setpose.setOrigin( tf::Vector3(x_f, y_f, z_f) );
+
+            // set orientation of the goal pose
+            double q_xf = quaternionlist.front().x;
+            double q_yf = quaternionlist.front().y;
+            double q_zf = quaternionlist.front().z;
+            double q_wf = quaternionlist.front().w;
+            setpose.setRotation( tf::Quaternion(q_xf, q_yf, q_zf, q_wf));
+
+
             moving = true;
             joint_trajectory.points.clear();
 
@@ -250,6 +286,37 @@ int main( int argc, char** argv ){
             if( fabs(Inverse( J, Ji )) < 1e-09 )
             { std::cout << "Jacobian is near singular." << std::endl; }
 
+            // Convert Pose to Affine3d to Affine3f to Matrix4f
+            // You can see how complex it is even to convert Pose into
+            // an element of SE3
+            Eigen::Affine3d H0_6d;
+            tf::poseTFToEigen( setpose, H0_6d);
+            Eigen::Affine3f H0_6f = H0_6d.cast<float>();
+            Eigen::Matrix4f H_M = H0_6f.matrix();
+
+
+            // double pointer to store up to 8 ik solutions
+            double *q_sol[8];
+            for(int i = 0; i < 8; i++ )
+            {
+                // new will keep the data until it is deleted manually
+                q_sol[i] = new double[6];
+            }
+
+            int num_sol = inverse(H_M, q_sol);
+
+            // joint selection algorithm is needed to provide safe and
+            // smooth trajectory
+
+            for (int i = 0; i < 6; ++i)
+            {
+                jointstate.position[i] = q_sol[0][i];
+            }
+
+
+            /* This is the inverse kinematics realization for the translation
+               of UR5 by incrementing the joint postions
+
             // Compute the joint velocity by multiplying the (Ji v)
             double qd[3];
             qd[0] = Ji[0][0]*v[0] + Ji[0][1]*v[1] + Ji[0][2]*v[2];
@@ -260,6 +327,8 @@ int main( int argc, char** argv ){
             jointstate.position[0] += qd[0];
             jointstate.position[1] += qd[1];
             jointstate.position[2] += qd[2];
+            */
+
 
             trajectory_msgs::JointTrajectoryPoint point;
             point.positions = jointstate.position;
@@ -272,7 +341,7 @@ int main( int argc, char** argv ){
         }
         else{
             jointstate = jointstate_init;
-            setpoint = current;
+            setpose = current_pose;
             moving = false;
         }
 
