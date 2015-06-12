@@ -9,16 +9,14 @@
 //This node subscribes to the ROS topic /active_echo_data and publishes
 //the coordinate information of the segmented point.
 
-
-
 void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 {
     static tf::TransformBroadcaster br;
     tf::Transform transform;
 
-    double element_w = 1; // To be replaced with real value
-    double AE_SRate = 0.5; // To be replaced with real value
-    double SOS = 340; // To be replaced with real value
+    double element_w = 0.45; // mm
+    double AE_SRate = 80; // mhz
+    double SOS = 1480; // m/s
 
     // Linear ultrasound probe
     // Note: x and y are flipped so that the reference frame of the probe

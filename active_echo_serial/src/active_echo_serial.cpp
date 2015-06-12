@@ -192,7 +192,7 @@ int main(int argc, char **argv)
 	int res;
 
 	// Set the buad rate, data bits and stop bit
-	setup_port(fd, 115200, 8, 1, false, false);
+	setup_port(fd, 921600, 8, 1, false, false);
 
 	ros::init(argc, argv, "active_echo_publisher");
 

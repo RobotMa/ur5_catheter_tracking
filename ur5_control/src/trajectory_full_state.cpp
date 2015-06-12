@@ -11,7 +11,6 @@
 #include <inverse_ur5/lab4.h>
 #include <ur_kinematics/ur_kin.h>
 
-
 #include <std_msgs/Bool.h>
 #include <sensor_msgs/JointState.h>
 #include <trajectory_msgs/JointTrajectory.h>
@@ -237,6 +236,7 @@ int main( int argc, char** argv ){
             double y_f = pointlist.front().y;
             double z_f = pointlist.front().z;
             setpose.setOrigin( tf::Vector3(x_f, y_f, z_f) );
+            pointlist.pop_front();
 
             // set orientation of the goal pose
             double q_xf = quaternionlist.front().x;
@@ -244,7 +244,7 @@ int main( int argc, char** argv ){
             double q_zf = quaternionlist.front().z;
             double q_wf = quaternionlist.front().w;
             setpose.setRotation( tf::Quaternion(q_xf, q_yf, q_zf, q_wf));
-
+            quaternionlist.pop_front();
 
             moving = true;
             joint_trajectory.points.clear();
