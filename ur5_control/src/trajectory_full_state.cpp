@@ -3,6 +3,9 @@
 #include <Eigen/Dense>
 #include <unsupported/Eigen/MatrixFunctions>
 
+#include <vector>
+#include <algorithm>
+
 #include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
 
@@ -308,14 +311,33 @@ int main( int argc, char** argv ){
             // joint selection algorithm is needed to provide safe and
             // smooth trajectory
 
+	    //Comparison to for smooth trajectory added by J. Davis 6/16/15
+	    //change jointstate to sub_move?
+
+	    //Calculate the norm between the current position for all possible inverse solutions
+	    /*std::vector<double> ang_dist;
+	    double dists = 0;
+	    for (int i = 0; i < num_sol; i++)
+	    {	      
+	      for (int j = 0; j < 6; j++)
+	      {	
+		dists += (jointstate_init.position[j] - q_sol[i][j])*(jointstate_init.position[j] - q_sol[i][j]);
+	      }
+	      ang_dist.push_back(sqrt(dists));
+	      dists = 0;
+	    }
+
+            //Return the iterator value for the smallest angular difference
+	    int angs = std::distance(ang_dist.begin(),std::min_element(ang_dist.begin(), ang_dist.end()));
+	    
             for (int i = 0; i < 6; ++i)
             {
-                jointstate.position[i] = q_sol[0][i];
-            }
+                jointstate.position[i] = q_sol[angs][i];
+	    }*/
 
 
-            /* This is the inverse kinematics realization for the translation
-               of UR5 by incrementing the joint postions
+           // This is the inverse kinematics realization for the translation
+            //   of UR5 by incrementing the joint postions
 
             // Compute the joint velocity by multiplying the (Ji v)
             double qd[3];
@@ -327,7 +349,7 @@ int main( int argc, char** argv ){
             jointstate.position[0] += qd[0];
             jointstate.position[1] += qd[1];
             jointstate.position[2] += qd[2];
-            */
+            
 
 
             trajectory_msgs::JointTrajectoryPoint point;
