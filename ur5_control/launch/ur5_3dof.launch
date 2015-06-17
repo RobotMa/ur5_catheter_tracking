@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<launch>
+  
+  <!-- Use the the urdf of UR5 with ultrasound sensor attached -->
+  <arg name="model" default="$(find sensor_description)/urdf/ur5_eef.urdf"/>
+  <!--arg name="model" default="$(find ur5_control)/urdf/ur5_robot.urdf" /-->
+
+  <param name="robot_description" textfile="$(arg model)" />
+  
+  <node
+      name="robot_state_publisher" 
+      pkg="robot_state_publisher" 
+      type="robot_state_publisher" 
+      output="screen" >
+    <remap from="joint_states" to="joint_trajectory"/>
+  </node>
+  
+  <node 
+      pkg="ur5_control" 
+      type="trajectory"
+      name="trajectory"  
+      output="screen" >
+    <!--<remap from="joint_states" to="joint_trajectory"/>-->
+  </node>
+  
+  <node
+      name="rviz" 
+      pkg="rviz"
+      type="rviz"
+      args="-d $(find ur5_control)/ur5_control.rviz" required="true" >
+  </node>
+  
+</launch>
