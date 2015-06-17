@@ -18,7 +18,7 @@
   <node 
       pkg="ur5_control" 
       type="trajectory_full_state"
-      name="trajectory_full_state"  
+      name="trajectory_full_state" 
       output="screen" >
     <!--<remap from="joint_states" to="joint_trajectory"/>-->
   </node>

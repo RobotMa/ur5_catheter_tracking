@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 #include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
@@ -294,11 +295,87 @@ int main( int argc, char** argv ){
             // an element of SE3
             Eigen::Affine3d H0_6d;
             tf::poseTFToEigen( setpose, H0_6d);
-            Eigen::Affine3f H0_6f = H0_6d.cast<float>();
-            Eigen::Matrix4f H_M = H0_6f.matrix();
+	    // Eigen::Affine3f H0_6f = H0_6d.cast<float>();
+            Eigen::Matrix4d H_M = H0_6d.matrix();
 
+	    //Try UR kinematics solver
+	    double q_sol[8*6];
+	    /*double* T = new double[16];
+	    *T = H_M(0,2); T++;
+	    *T = H_M(0,0); T++;
+	    *T = H_M(0,1); T++;
+	    *T = H_M(0,3); T++;
+	    *T = H_M(1,2); T++;
+	    *T = H_M(1,0); T++;
+	    *T = H_M(1,1); T++;
+	    *T = H_M(1,3); T++;
+	    *T = H_M(2,2); T++;
+	    *T = H_M(2,0); T++;
+	    *T = H_M(2,1); T++;
+	    *T = H_M(2,3); T++;
+	    *T = H_M(3,0); T++;
+	    *T = H_M(3,1); T++;
+	    *T = H_M(3,2); T++;
+	    *T = H_M(3,3); 
+	    */
+	    
+	    double T[16];
+	    T[0] = H_M(0,0);
+	    T[1] = H_M(0,1); 
+	    T[2] = H_M(0,2); 
+	    T[3] = H_M(0,3); 
+	    T[4] = H_M(1,0); 
+	    T[5] = H_M(1,1);
+	    T[6] = H_M(1,2); 
+	    T[7] = H_M(1,3); 
+	    T[8] = H_M(2,0); 
+	    T[9] = H_M(2,1); 
+	    T[10] = H_M(2,2); 
+	    T[11] = H_M(2,3); 
+	    T[12] = H_M(3,0); 
+	    T[13] = H_M(3,1);
+	    T[14] = H_M(3,2); 
+	    T[15] = H_M(3,3);
 
-            // double pointer to store up to 8 ik solutions
+	    double* H = new double[16];
+	    double joints[6];
+	    /* for (int i = 0; i < 6; i++)
+	    {
+	      joints[i] = jointstate_init.position[i];
+	      }*/
+	    // ur_kinematics::forward(joints, H);
+
+	    int num_sol = ur_kinematics::inverse(T, q_sol);
+	    // ROS_ERROR_STREAM("SOl1 " << T[3] << T[7] << T[11]);
+	    std::vector<double> ang_dist;
+	    double dists = 0;
+	    for (int i = 0; i < num_sol; i++)
+	    {	      
+	      for (int j = 0; j < 6; j++)
+	      {	
+		dists += (jointstate_init.position[j] - q_sol[6*i+j])*(jointstate_init.position[j] - q_sol[6*i+j]);
+	      }
+	      ang_dist.push_back(sqrt(dists));
+	      dists = 0;
+	    }
+
+	     //Return the iterator value for the smallest angular difference
+	    int angs = std::distance(ang_dist.begin(),std::min_element(ang_dist.begin(), ang_dist.end()));
+	    
+            for (int i = 0; i < 6; ++i)
+            {
+	      //jointstate.position[i] = q_sol[i];
+	       jointstate.position[i] = q_sol[6*angs+i];
+	    }
+	    for (int i = 0; i < 6; i++)
+	    {
+	      joints[i] = jointstate.position[i];
+	    }
+	      
+	    ur_kinematics::forward(joints, H);
+	    ROS_INFO_STREAM("SOl1 " << H[3] << H[7] << H[11]);
+	    //ME class invKim not correct
+	    /* // double pointer to store up to 8 ik solutions
             double *q_sol[8];
             for(int i = 0; i < 8; i++ )
             {
@@ -308,14 +385,14 @@ int main( int argc, char** argv ){
 
             int num_sol = inverse(H_M, q_sol);
 
-            // joint selection algorithm is needed to provide safe and
+	    // joint selection algorithm is needed to provide safe and
             // smooth trajectory
 
 	    //Comparison to for smooth trajectory added by J. Davis 6/16/15
 	    //change jointstate to sub_move?
 
 	    //Calculate the norm between the current position for all possible inverse solutions
-	    /*std::vector<double> ang_dist;
+	    std::vector<double> ang_dist;
 	    double dists = 0;
 	    for (int i = 0; i < num_sol; i++)
 	    {	      
@@ -333,13 +410,13 @@ int main( int argc, char** argv ){
             for (int i = 0; i < 6; ++i)
             {
                 jointstate.position[i] = q_sol[angs][i];
-	    }*/
+	    }
 
-
+	    */
            // This is the inverse kinematics realization for the translation
             //   of UR5 by incrementing the joint postions
 
-            // Compute the joint velocity by multiplying the (Ji v)
+	    /* // Compute the joint velocity by multiplying the (Ji v)
             double qd[3];
             qd[0] = Ji[0][0]*v[0] + Ji[0][1]*v[1] + Ji[0][2]*v[2];
             qd[1] = Ji[1][0]*v[0] + Ji[1][1]*v[1] + Ji[1][2]*v[2];
@@ -349,6 +426,7 @@ int main( int argc, char** argv ){
             jointstate.position[0] += qd[0];
             jointstate.position[1] += qd[1];
             jointstate.position[2] += qd[2];
+	    */
             
 
 
