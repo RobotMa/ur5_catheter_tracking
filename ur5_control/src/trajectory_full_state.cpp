@@ -78,6 +78,9 @@ void callback_move( const std_msgs::Bool& move ){
 
 }
 
+// This function can be deleted if the inverse kinematics for 6 joints 
+// is implemented successfully
+
 // Compute and return the Jacobian of the robot given the current joint 
 // positions
 // input: the input joint state
@@ -106,6 +109,9 @@ void Jacobian( const sensor_msgs::JointState& jointstate, double J[3][3] ){
     J[2][2] = -0.4869*cos(q2 + q3);
 
 }
+
+// This function can be deleted if the inverse kinematics for 6 joints 
+// is implemented successfully
 
 // Inverse a 3x3 matrix
 // input: A 3x3 matrix
@@ -162,9 +168,7 @@ int main( int argc, char** argv ){
     ros::Subscriber sub_setpose;
     sub_setpose = nh.subscribe( "setpose", 1, callback );
 
-    // This is the joint state message coming from the robot
-    // Get the initial joint state
-    // sub_move is currently not used anywhere
+    // This is the joint sta
     ros::Subscriber sub_move;
     sub_move = nh.subscribe( "move", 1, callback_move );
 
@@ -294,6 +298,8 @@ int main( int argc, char** argv ){
             Eigen::Affine3f H0_6f = H0_6d.cast<float>();
             Eigen::Matrix4f H_M = H0_6f.matrix();
 
+            std::cout << "Pose of the end-effector is \n" << H_M << std::endl;
+
 
             // double pointer to store up to 8 ik solutions
             double *q_sol[8];
@@ -312,22 +318,6 @@ int main( int argc, char** argv ){
             {
                 jointstate.position[i] = q_sol[0][i];
             }
-
-
-            /* This is the inverse kinematics realization for the translation
-               of UR5 by incrementing the joint postions
-
-            // Compute the joint velocity by multiplying the (Ji v)
-            double qd[3];
-            qd[0] = Ji[0][0]*v[0] + Ji[0][1]*v[1] + Ji[0][2]*v[2];
-            qd[1] = Ji[1][0]*v[0] + Ji[1][1]*v[1] + Ji[1][2]*v[2];
-            qd[2] = Ji[2][0]*v[0] + Ji[2][1]*v[1] + Ji[2][2]*v[2];
-
-            // increment the joint positions
-            jointstate.position[0] += qd[0];
-            jointstate.position[1] += qd[1];
-            jointstate.position[2] += qd[2];
-            */
 
 
             trajectory_msgs::JointTrajectoryPoint point;
