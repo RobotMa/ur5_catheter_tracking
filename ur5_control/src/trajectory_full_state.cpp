@@ -299,17 +299,14 @@ int main( int argc, char** argv ){
             // an element of SE3
             Eigen::Affine3d H0_6d;
             tf::poseTFToEigen( setpose, H0_6d);
-<<<<<<< HEAD
             Eigen::Affine3f H0_6f = H0_6d.cast<float>();
-            Eigen::Matrix4f H_M = H0_6f.matrix();
+            Eigen::Matrix4d H_M = H0_6d.matrix();
 
             std::cout << "Pose of the end-effector is \n" << H_M << std::endl;
 
 
             // double pointer to store up to 8 ik solutions
-=======
 	    // Eigen::Affine3f H0_6f = H0_6d.cast<float>();
-            Eigen::Matrix4d H_M = H0_6d.matrix();
 
 	    //Try UR kinematics solver
 	    double q_sol[8*6];
@@ -389,7 +386,6 @@ int main( int argc, char** argv ){
 	    ROS_INFO_STREAM("SOl1 " << H[3] << H[7] << H[11]);
 	    //ME class invKim not correct
 	    /* // double pointer to store up to 8 ik solutions
->>>>>>> f77e7bbcce3057b806b4833d64b7394edc124b50
             double *q_sol[8];
             for(int i = 0; i < 8; i++ )
             {
@@ -426,8 +422,6 @@ int main( int argc, char** argv ){
                 jointstate.position[i] = q_sol[angs][i];
 	    }
 
-<<<<<<< HEAD
-=======
 	    */
            // This is the inverse kinematics realization for the translation
             //   of UR5 by incrementing the joint postions
@@ -446,7 +440,6 @@ int main( int argc, char** argv ){
             
 
 
->>>>>>> f77e7bbcce3057b806b4833d64b7394edc124b50
             trajectory_msgs::JointTrajectoryPoint point;
             point.positions = jointstate.position;
             point.velocities = std::vector<double>( 6, 0.0 );
