@@ -18,7 +18,7 @@ double UR5::alpha[] = {PI/2,0,0,PI/2,-PI/2,0};
 double UR5::a[] = {0,-0.425,-0.39225,0,0,0};
 //An array of the six d D-H parameters for the UR5
 double UR5::d[] = {0.089159,0,0,0.10915,0.09465,0.0823};
-
+double UR5::off[] = {0,-PI/2,0,0,-PI/2,0};
 /**
  * Creates an instance of the class to allow plotting 
  * of the UR5 in rviz.
@@ -44,6 +44,7 @@ UR5::UR5(ros::NodeHandle &n):rvizPlotter(n){
  * Denavit-Hartenberg parameters.
  */
 Eigen::Matrix4f UR5::dhf(double alpha, double a, double d, double theta){
+  //Eigen::Matrix4f UR5::dhf(double alpha, double a, double d, double theta, double off){
 	
 	//Creating the matrix which describes the rotation of theta about Z_i-1
 	Eigen::Matrix4f Rz;
@@ -51,6 +52,12 @@ Eigen::Matrix4f UR5::dhf(double alpha, double a, double d, double theta){
 	      sin(theta),  cos(theta), 0, 0, 
 	               0,   	    0, 1, 0, 
 	               0,	    0, 0, 1;
+
+	/*Rz << cos(theta+off), -sin(theta+off), 0, 0, 
+	      sin(theta+off),  cos(theta+off), 0, 0, 
+	               0,   	    0, 1, 0, 
+	               0,	    0, 0, 1;
+	*/
 
 	//Creating the matrix which describes the translation of d along Z_i-1
 	Eigen::Matrix4f Tz = Eigen::MatrixXf::Identity(4,4);
@@ -83,7 +90,8 @@ Eigen::Matrix4f UR5::fwd(double q[]){
 	
 	for(int i = 0; i < 6; i++)
 	{
-		H_0_6 = H_0_6*dhf(alpha[i], a[i], d[i], q[i]);  
+	  H_0_6 = H_0_6*dhf(alpha[i], a[i], d[i], q[i]);
+	  //H_0_6 = H_0_6*dhf(alpha[i], a[i], d[i], q[i],off[i]);  
 	}
 	return H_0_6;
 }
@@ -93,7 +101,7 @@ Eigen::Matrix4f UR5::fwd(double q[]){
  */
  void UR5::plotfwd(double q[]){
 	ur5::ur5_joints j;
-
+	//j.q.push_back(q[0]);
 	j.q.push_back(q[0]-PI);
 	for(int i = 1; i < 6; i++)
 	{
@@ -174,7 +182,8 @@ void UR5::closeHand()
 	Eigen::Matrix4f H_total = Eigen::MatrixXf::Identity(4,4);
 	for(int i = 0; i < 6; i++)
 	{
-		H_total = H_total*dhf(UR5::alpha[i],UR5::a[i],UR5::d[i],q[i]);
+	  H_total = H_total*dhf(UR5::alpha[i],UR5::a[i],UR5::d[i],q[i]);
+	  //H_total = H_total*dhf(UR5::alpha[i],UR5::a[i],UR5::d[i],q[i], UR5::off[i]);
 		this->rvizPlotter.plotf(H_total,"base_link",link_names[i]);
 	}
 }

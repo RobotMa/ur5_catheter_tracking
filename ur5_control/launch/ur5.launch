@@ -16,10 +16,14 @@
   </node>
   
   <node 
-      pkg="ur5_control" 
-      type="trajectory_full_state"
-      name="trajectory_full_state"  
+      pkg="ur5_control"
+      type="simple_motion"
+      name="simple_motion"
       output="screen" >
+      <!--pkg="ur5_control" 
+      type="trajectory_full_state"
+      name="trajectory_full_state" 
+      output="screen" >-->
     <!--<remap from="joint_states" to="joint_trajectory"/>-->
   </node>
   
