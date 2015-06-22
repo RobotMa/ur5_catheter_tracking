@@ -108,13 +108,15 @@ include_directories(
 )
 
 ## Declare a cpp library
-add_library(inverse_ur5 src/lab4.cpp)
+add_library(inverse_ur5 src/lab4.cpp src/ur_kin.cpp)
 target_link_libraries(inverse_ur5 ${catkin_LIBRARIES})
+
 
 ## Declare a cpp executable
 # add_executable(me530646_lab4_node src/me530646_lab4_node.cpp)
-add_executable(lab4_main src/lab4_main.cpp src/lab4.cpp)
+add_executable(lab4_main src/lab4_main.cpp src/lab4.cpp src/ur_kin.cpp)
 target_link_libraries(lab4_main ${catkin_LIBRARIES})
+
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes

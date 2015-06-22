@@ -5,16 +5,16 @@
 
 #include <vector>
 #include <algorithm>
-#include <iostream>
 
 #include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
 
 #include <tf_conversions/tf_eigen.h>
 
+#include <rviz_plot/lab1.h>
+#include <rviz_animate/lab2.h>
+#include <ur5_class/lab3.h>
 #include <inverse_ur5/lab4.h>
-#include <ur_kinematics/ur_kin.h>
-
 #include <std_msgs/Bool.h>
 #include <sensor_msgs/JointState.h>
 #include <trajectory_msgs/JointTrajectory.h>
@@ -22,6 +22,7 @@
 #include <control_msgs/FollowJointTrajectoryAction.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
+#include <ur_kinematics/ur_kin.h>
 
 
 // global list to hold the setposes. Not very thread safe but it's fine.
@@ -40,7 +41,7 @@ std::list< geometry_msgs::Quaternion > quaternionlist;
 void callback( const geometry_msgs::Pose& newpose ){
     geometry_msgs::Point newpoint;
     geometry_msgs::Quaternion newquaternion;
-
+    
     newpoint.x = newpose.position.x;
     newpoint.y = newpose.position.y;
     newpoint.z = newpose.position.z;
@@ -81,64 +82,6 @@ void callback_move( const std_msgs::Bool& move ){
     }
 
 }
-
-// Compute and return the Jacobian of the robot given the current joint 
-// positions
-// input: the input joint state
-// output: the 3x3 Jacobian (position only)
-void Jacobian( const sensor_msgs::JointState& jointstate, double J[3][3] ){
-
-    for( int r=0; r<3; r++ )
-        for( int c=0; c<3; c++ )
-            J[r][c] = 0.0;
-
-    double q1 = jointstate.position[0];
-    double q2 = jointstate.position[1];
-    double q3 = jointstate.position[2];
-
-    // Fill the values of the Jacobian matrix J
-    J[0][0] = 0.4869*sin(q1)*sin(q2)*sin(q3) - 0.425*cos(q2)*sin(q1) - 0.19145*cos(q1) - 0.4869*cos(q2)*cos(q3)*sin(q1);
-    J[0][1] = -0.0001*cos(q1)*(4869.0*sin(q2 + q3) + 4250.0*sin(q2));
-    J[0][2] = -0.4869*sin(q2 + q3)*cos(q1);
-
-    J[1][0] = 0.425*cos(q1)*cos(q2) - 0.19145*sin(q1) + 0.4869*cos(q1)*cos(q2)*cos(q3) - 0.4869*cos(q1)*sin(q2)*sin(q3);
-    J[1][1] = -0.0001*sin(q1)*(4869.0*sin(q2 + q3) + 4250.0*sin(q2));
-    J[1][2] = -0.4869*sin(q2 + q3)*sin(q1);
-
-    J[2][0] = 0.0;
-    J[2][1] = -0.4869*cos(q2 + q3) - 0.425*cos(q2);
-    J[2][2] = -0.4869*cos(q2 + q3);
-
-}
-
-// Inverse a 3x3 matrix
-// input: A 3x3 matrix
-// output: A 3x3 matrix inverse
-// return the determinant inverse
-double Inverse( double A[3][3], double Ainverse[3][3] ){
-
-    double determinant = (  A[0][0]*( A[1][1]*A[2][2]-A[2][1]*A[1][2] ) -
-                            A[0][1]*( A[1][0]*A[2][2]-A[1][2]*A[2][0] ) +
-                            A[0][2]*( A[1][0]*A[2][1]-A[1][1]*A[2][0] ) );
-
-    double invdet = 1.0/determinant;
-
-    Ainverse[0][0] =  ( A[1][1]*A[2][2] - A[2][1]*A[1][2] )*invdet;
-    Ainverse[0][1] = -( A[0][1]*A[2][2] - A[0][2]*A[2][1] )*invdet;
-    Ainverse[0][2] =  ( A[0][1]*A[1][2] - A[0][2]*A[1][1] )*invdet;
-
-    Ainverse[1][0] = -( A[1][0]*A[2][2] - A[1][2]*A[2][0] )*invdet;
-    Ainverse[1][1] =  ( A[0][0]*A[2][2] - A[0][2]*A[2][0] )*invdet;
-    Ainverse[1][2] = -( A[0][0]*A[1][2] - A[1][0]*A[0][2] )*invdet;
-
-    Ainverse[2][0] =  ( A[1][0]*A[2][1] - A[2][0]*A[1][1] )*invdet;
-    Ainverse[2][1] = -( A[0][0]*A[2][1] - A[2][0]*A[0][1] )*invdet;
-    Ainverse[2][2] =  ( A[0][0]*A[1][1] - A[1][0]*A[0][1] )*invdet;
-
-    return determinant;
-
-}
-
 
 int main( int argc, char** argv ){
 
@@ -183,7 +126,7 @@ int main( int argc, char** argv ){
     // To listen to the current position and orientation of the robot
     // wiki.ros.org/tf/Tutorials/Writing%20a%20tf%20listener%20%28C%2B%2B%29
     tf::TransformListener listener;
-
+ 
     // Rate (Hz) of the trajectory
     // http://wiki.ros.org/roscpp/Overview/Time
     ros::Rate rate( 100 );            // the trajectory rate
@@ -194,7 +137,7 @@ int main( int argc, char** argv ){
     bool readinitpose = true;                       // used to initialize setpose
     bool moving = false;
     tf::Pose setpose;                               // the destination setpose
-
+    tf::StampedTransform kinTrans;
     // This is the main trajectory loop
     // At each iteration it computes and publishes a new joint positions that
     // animate the motion of the robot
@@ -204,6 +147,7 @@ int main( int argc, char** argv ){
         // Read the current forward kinematics of the robot
         // wiki.ros.org/tf/Tutorials/Writing%20a%20tf%20listener%20%28C%2B%2B%29
         tf::Pose current_pose;
+	tf::Pose trans_pose;
         try{
 
             // Change the name of the reference frame and target frame.
@@ -213,7 +157,7 @@ int main( int argc, char** argv ){
             std::string tgt_frame( "ee_link" );
 
             tf::StampedTransform transform;
-            listener.lookupTransform( ref_frame, tgt_frame, ros::Time(0), transform );
+            listener.lookupTransform( ref_frame, tgt_frame, ros::Time::now(), transform );
 
             // convert tf into ROS message information
             // Note: tf is used to perform mathematicla calculation
@@ -252,22 +196,11 @@ int main( int argc, char** argv ){
 
             moving = true;
             joint_trajectory.points.clear();
-
-            time_from_start = ros::Duration(0.0);
-            trajectory_msgs::JointTrajectoryPoint point;
-            point.positions = jointstate.position;
-            point.velocities = std::vector<double>( 6, 0.0 );
-            point.time_from_start = time_from_start;
-            time_from_start = time_from_start + ros::Duration( period );
-
-            joint_trajectory.points.push_back( point );
-            joint_trajectory.joint_names = jointstate.name;
-
         }
 
         // This is the translation left for the trajectory
         tf::Point error = setpose.getOrigin() - current_pose.getOrigin();
-
+	
         //  ** The inverse kinematics of UR5 for all six dofs is to be implemented.
         //  ** Possible solutions are ik_fast in ur_kinematics (which suffers
         //  ** from a 90% success rate), kdl_chainsolver, or the inverse kinematics
@@ -276,122 +209,31 @@ int main( int argc, char** argv ){
         // If the error is small enough to go to the destination
         if( moving && positionincrement < error.length() ){
 
-            // Determine a desired cartesian linear velocity.
-            // We will command the robot to move with this velocity
-            tf::Point v = ( error / error.length() ) * positionincrement;
-
-            double J[3][3], Ji[3][3];
-
-            // Compute the Jacobian
-            Jacobian( jointstate, J );
-
-            // Compute the inverse Jacobian. The inverse return the
-            // value of the determinant.
-            if( fabs(Inverse( J, Ji )) < 1e-09 )
-            { std::cout << "Jacobian is near singular." << std::endl; }
-
             // Convert Pose to Affine3d to Affine3f to Matrix4f
             // You can see how complex it is even to convert Pose into
             // an element of SE3
-            Eigen::Affine3d H0_6d;
+
+	    Eigen::Affine3d H0_6d;
             tf::poseTFToEigen( setpose, H0_6d);
-	    // Eigen::Affine3f H0_6f = H0_6d.cast<float>();
             Eigen::Matrix4d H_M = H0_6d.matrix();
-
-	    //Try UR kinematics solver
-	    double q_sol[8*6];
-	    /*double* T = new double[16];
-	    *T = H_M(0,2); T++;
-	    *T = H_M(0,0); T++;
-	    *T = H_M(0,1); T++;
-	    *T = H_M(0,3); T++;
-	    *T = H_M(1,2); T++;
-	    *T = H_M(1,0); T++;
-	    *T = H_M(1,1); T++;
-	    *T = H_M(1,3); T++;
-	    *T = H_M(2,2); T++;
-	    *T = H_M(2,0); T++;
-	    *T = H_M(2,1); T++;
-	    *T = H_M(2,3); T++;
-	    *T = H_M(3,0); T++;
-	    *T = H_M(3,1); T++;
-	    *T = H_M(3,2); T++;
-	    *T = H_M(3,3); 
-	    */
-	    
-	    double T[16];
-	    T[0] = H_M(0,0);
-	    T[1] = H_M(0,1); 
-	    T[2] = H_M(0,2); 
-	    T[3] = H_M(0,3); 
-	    T[4] = H_M(1,0); 
-	    T[5] = H_M(1,1);
-	    T[6] = H_M(1,2); 
-	    T[7] = H_M(1,3); 
-	    T[8] = H_M(2,0); 
-	    T[9] = H_M(2,1); 
-	    T[10] = H_M(2,2); 
-	    T[11] = H_M(2,3); 
-	    T[12] = H_M(3,0); 
-	    T[13] = H_M(3,1);
-	    T[14] = H_M(3,2); 
-	    T[15] = H_M(3,3);
-
-	    double* H = new double[16];
-	    double joints[6];
-	    /* for (int i = 0; i < 6; i++)
-	    {
-	      joints[i] = jointstate_init.position[i];
-	      }*/
-	    // ur_kinematics::forward(joints, H);
-
-	    int num_sol = ur_kinematics::inverse(T, q_sol);
-	    // ROS_ERROR_STREAM("SOl1 " << T[3] << T[7] << T[11]);
-	    std::vector<double> ang_dist;
-	    double dists = 0;
-	    for (int i = 0; i < num_sol; i++)
-	    {	      
-	      for (int j = 0; j < 6; j++)
-	      {	
-		dists += (jointstate_init.position[j] - q_sol[6*i+j])*(jointstate_init.position[j] - q_sol[6*i+j]);
-	      }
-	      ang_dist.push_back(sqrt(dists));
-	      dists = 0;
+	    Eigen::MatrixXf H_6 = H_M.cast <float> ();
+	    Eigen::Matrix4f T_0;
+	    T_0 << -1.0, 0.0, 0.0, 0.0,
+	      0.0, -1.0, 0.0, 0.0,
+	      0.0, 0.0, 1.0, 0.0, 
+	      0.0, 0.0, 0.0, 1.0;
+	    Eigen::Matrix4f T_f;
+	    T_f << 0.0, 0.0, 1.0, 0.0,
+	      -1.0, 0.0, 0.0, 0.0,
+	      0.0, -1.0, 0.0, 0.0, 
+	      0.0, 0.0, 0.0, 1.0;
+	    H_6 = T_0*H_6*T_f;
+	    double* q_sol[8];
+	    for (int i = 0; i < 8; ++i) {
+	      q_sol[i] = new double[6];
 	    }
-
-	     //Return the iterator value for the smallest angular difference
-	    int angs = std::distance(ang_dist.begin(),std::min_element(ang_dist.begin(), ang_dist.end()));
-	    
-            for (int i = 0; i < 6; ++i)
-            {
-	      jointstate.position[i] = 0;
-	      // jointstate.position[i] = q_sol[6*angs+i];
-	    }
-	    for (int i = 0; i < 6; i++)
-	    {
-	      joints[i] = jointstate.position[i];
-	    }
-	      
-	    ur_kinematics::forward(joints, H);
-	    ROS_INFO_STREAM("SOl1 " << H[3] << H[7] << H[11]);
-	    //ME class invKim not correct
-	    /* // double pointer to store up to 8 ik solutions
-            double *q_sol[8];
-            for(int i = 0; i < 8; i++ )
-            {
-                // new will keep the data until it is deleted manually
-                q_sol[i] = new double[6];
-            }
-
-            int num_sol = inverse(H_M, q_sol);
-
-	    // joint selection algorithm is needed to provide safe and
-            // smooth trajectory
-
-	    //Comparison to for smooth trajectory added by J. Davis 6/16/15
-	    //change jointstate to sub_move?
-
-	    //Calculate the norm between the current position for all possible inverse solutions
+	    int num_sol = inverse(H_6, q_sol);
+	   
 	    std::vector<double> ang_dist;
 	    double dists = 0;
 	    for (int i = 0; i < num_sol; i++)
@@ -404,39 +246,28 @@ int main( int argc, char** argv ){
 	      dists = 0;
 	    }
 
-            //Return the iterator value for the smallest angular difference
+	     //Return the iterator value for the smallest angular difference
 	    int angs = std::distance(ang_dist.begin(),std::min_element(ang_dist.begin(), ang_dist.end()));
 	    
             for (int i = 0; i < 6; ++i)
             {
-                jointstate.position[i] = q_sol[angs][i];
+	      //jointstate.position[i] = 0;
+	      jointstate.position[i] = q_sol[angs][i];
 	    }
 
-	    */
-           // This is the inverse kinematics realization for the translation
-            //   of UR5 by incrementing the joint postions
-
-	    /* // Compute the joint velocity by multiplying the (Ji v)
-            double qd[3];
-            qd[0] = Ji[0][0]*v[0] + Ji[0][1]*v[1] + Ji[0][2]*v[2];
-            qd[1] = Ji[1][0]*v[0] + Ji[1][1]*v[1] + Ji[1][2]*v[2];
-            qd[2] = Ji[2][0]*v[0] + Ji[2][1]*v[1] + Ji[2][2]*v[2];
-
-            // increment the joint positions
-            jointstate.position[0] += qd[0];
-            jointstate.position[1] += qd[1];
-            jointstate.position[2] += qd[2];
-	    */
-            
-
-
-            trajectory_msgs::JointTrajectoryPoint point;
-            point.positions = jointstate.position;
-            point.velocities = std::vector<double>( 6, 0.0 );
-            point.time_from_start = time_from_start;
-            time_from_start = time_from_start + ros::Duration( period );
-
-            joint_trajectory.points.push_back( point );
+	    tf::StampedTransform transforms;  
+	    listener.lookupTransform( "base_link", "ee_link", ros::Time(0), transforms );
+	    trans_pose.setOrigin(transforms.getOrigin());
+	    trans_pose.setRotation(transforms.getRotation());
+	    Eigen::Affine3d H0_6d_1;
+            tf::poseTFToEigen( trans_pose, H0_6d_1);
+            Eigen::Matrix4d H_M_1 = H0_6d_1.matrix();
+	    ROS_INFO_STREAM("xt:" << H_M_1(0,3));
+	    ROS_INFO_STREAM("yt:" << H_M_1(1,3));
+	    ROS_INFO_STREAM("zt:" << H_M_1(2,3)); 
+	   
+	    //ROS_INFO_STREAM("joints" << jointstate.position[0] << "   " <<  jointstate.position[1] <<"   " << jointstate.position[2] <<"   " << jointstate.position[3] <<"   " <<jointstate.position[4] <<"   " << jointstate.position[5]);
+	    jointstate_init = jointstate;
 
         }
         else{

@@ -87,8 +87,7 @@ class UR5 {
 	 * Returns the 4x4 transformation given the a 4x1 vector of
 	 * Denavit-Hartenberg parameters.
 	 */
-	static Eigen::Matrix4f dhf(double alpha, double a, double d, double theta);
-//static Eigen::Matrix4f dhf(double alpha, double a, double d, double theta, double off);
+	static Eigen::Matrix4f dhf(double alpha, double a, double d, double theta, double off);
 };
 
 #endif
