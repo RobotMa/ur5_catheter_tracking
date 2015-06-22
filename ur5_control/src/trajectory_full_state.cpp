@@ -82,6 +82,9 @@ void callback_move( const std_msgs::Bool& move ){
 
 }
 
+// This function can be deleted if the inverse kinematics for 6 joints 
+// is implemented successfully
+
 // Compute and return the Jacobian of the robot given the current joint 
 // positions
 // input: the input joint state
@@ -110,6 +113,9 @@ void Jacobian( const sensor_msgs::JointState& jointstate, double J[3][3] ){
     J[2][2] = -0.4869*cos(q2 + q3);
 
 }
+
+// This function can be deleted if the inverse kinematics for 6 joints 
+// is implemented successfully
 
 // Inverse a 3x3 matrix
 // input: A 3x3 matrix
@@ -166,9 +172,7 @@ int main( int argc, char** argv ){
     ros::Subscriber sub_setpose;
     sub_setpose = nh.subscribe( "setpose", 1, callback );
 
-    // This is the joint state message coming from the robot
-    // Get the initial joint state
-    // sub_move is currently not used anywhere
+    // This is the joint sta
     ros::Subscriber sub_move;
     sub_move = nh.subscribe( "move", 1, callback_move );
 
@@ -295,6 +299,15 @@ int main( int argc, char** argv ){
             // an element of SE3
             Eigen::Affine3d H0_6d;
             tf::poseTFToEigen( setpose, H0_6d);
+<<<<<<< HEAD
+            Eigen::Affine3f H0_6f = H0_6d.cast<float>();
+            Eigen::Matrix4f H_M = H0_6f.matrix();
+
+            std::cout << "Pose of the end-effector is \n" << H_M << std::endl;
+
+
+            // double pointer to store up to 8 ik solutions
+=======
 	    // Eigen::Affine3f H0_6f = H0_6d.cast<float>();
             Eigen::Matrix4d H_M = H0_6d.matrix();
 
@@ -376,6 +389,7 @@ int main( int argc, char** argv ){
 	    ROS_INFO_STREAM("SOl1 " << H[3] << H[7] << H[11]);
 	    //ME class invKim not correct
 	    /* // double pointer to store up to 8 ik solutions
+>>>>>>> f77e7bbcce3057b806b4833d64b7394edc124b50
             double *q_sol[8];
             for(int i = 0; i < 8; i++ )
             {
@@ -412,6 +426,8 @@ int main( int argc, char** argv ){
                 jointstate.position[i] = q_sol[angs][i];
 	    }
 
+<<<<<<< HEAD
+=======
 	    */
            // This is the inverse kinematics realization for the translation
             //   of UR5 by incrementing the joint postions
@@ -430,6 +446,7 @@ int main( int argc, char** argv ){
             
 
 
+>>>>>>> f77e7bbcce3057b806b4833d64b7394edc124b50
             trajectory_msgs::JointTrajectoryPoint point;
             point.positions = jointstate.position;
             point.velocities = std::vector<double>( 6, 0.0 );
