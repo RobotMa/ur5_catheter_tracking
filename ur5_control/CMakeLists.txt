@@ -15,7 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
   ur_description
-  ur_kinematics
   ur5
   rviz_plot
   rviz_animate
@@ -119,8 +118,8 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable( trajectory src/trajectory.cpp)
-add_executable( trajectory_full_state src/trajectory_full_state.cpp)
+#add_executable( trajectory src/trajectory.cpp)
+#add_executable( trajectory_full_state src/trajectory_full_state.cpp)
 add_executable( simple_motion src/simple_motion.cpp)
 # add_executable( ur5_trajectory src/ur5_trajectory.cpp)
 
@@ -129,8 +128,8 @@ add_executable( simple_motion src/simple_motion.cpp)
 # add_dependencies(assignment1_node assignment1_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries( trajectory ${catkin_LIBRARIES} )
-target_link_libraries( trajectory_full_state ${catkin_LIBRARIES})
+#target_link_libraries( trajectory ${catkin_LIBRARIES} )
+#target_link_libraries( trajectory_full_state ${catkin_LIBRARIES})
 target_link_libraries( simple_motion  ${catkin_LIBRARIES})
 # target_link_libraries( ur5_trajectory ${catkin_LIBRARIES} )
 

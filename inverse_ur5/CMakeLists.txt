@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   ur5
-  ur_kinematics
 )
 
 find_package(cmake_modules REQUIRED) # Required by Indigo
@@ -108,13 +107,13 @@ include_directories(
 )
 
 ## Declare a cpp library
-add_library(inverse_ur5 src/lab4.cpp src/ur_kin.cpp)
+add_library(inverse_ur5 src/lab4.cpp)
 target_link_libraries(inverse_ur5 ${catkin_LIBRARIES})
 
 
 ## Declare a cpp executable
 # add_executable(me530646_lab4_node src/me530646_lab4_node.cpp)
-add_executable(lab4_main src/lab4_main.cpp src/lab4.cpp src/ur_kin.cpp)
+add_executable(lab4_main src/lab4_main.cpp src/lab4.cpp)
 target_link_libraries(lab4_main ${catkin_LIBRARIES})
 
 

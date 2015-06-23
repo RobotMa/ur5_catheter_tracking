@@ -22,7 +22,12 @@
 #include <control_msgs/FollowJointTrajectoryAction.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
-#include <ur_kinematics/ur_kin.h>
+//#include <ur_kinematics/ur_kin.h>
+
+
+//**TO-DO**
+//Implement a trajectory between the desired pose and initial pose
+//***************************************************************
 
 
 // global list to hold the setposes. Not very thread safe but it's fine.
@@ -33,6 +38,7 @@
 // Define lists for translation and rotation separately
 std::list< geometry_msgs::Point > pointlist;
 std::list< geometry_msgs::Quaternion > quaternionlist;
+bool startUp = true;
 
 // This callback function is triggered each time that a set of pose is published.
 // The only thing it does is to copy the received 6D pose to the list
@@ -57,14 +63,18 @@ void callback( const geometry_msgs::Pose& newpose ){
     quaternionlist.push_back( newquaternion );
 }
 
-// This callback_joint_states function is triggered each time when a joint state
-// is published by the ur_driver. The only thing it does to initialize
-// the initial joint state of the UR5 urdf model in RVIZ ??
+// This callback_joint_states function is triggered each loop during the spin
+//We grab the initial pose of the robot and then ignore and update in the loop
 sensor_msgs::JointState jointstate_init;
-void callback_joint_states( const sensor_msgs::JointState& js )
-{ jointstate_init = js; }
+void callback_joint_states( const sensor_msgs::JointState& js ) {
+  if (startUp) {
+    jointstate_init = js;
+  }
+}
+
 
 // actionlib
+/*
 trajectory_msgs::JointTrajectory joint_trajectory;
 void callback_move( const std_msgs::Bool& move ){
 
@@ -82,7 +92,7 @@ void callback_move( const std_msgs::Bool& move ){
     }
 
 }
-
+*/
 int main( int argc, char** argv ){
 
     // Initialize ROS node "trajectory"
@@ -112,14 +122,15 @@ int main( int argc, char** argv ){
     // This is the joint state message coming from the robot
     // Get the initial joint state
     // sub_move is currently not used anywhere
-    ros::Subscriber sub_move;
-    sub_move = nh.subscribe( "move", 1, callback_move );
+    // ros::Subscriber sub_move;
+    //sub_move = nh.subscribe( "move", 1, callback_move );
 
     // This is the joint state message coming from the robot
-    // Get the initial joint state
-    // full_joint_state is not used anywhere either
+    // It is currently only being used to grab the initial pose    
     ros::Subscriber full_joint_states;
     full_joint_states = nh.subscribe( "joint_states", 1, callback_joint_states );
+    
+    //Object to publish desired joint positions of the robot
     sensor_msgs::JointState jointstate;
 
 
@@ -132,12 +143,12 @@ int main( int argc, char** argv ){
     ros::Rate rate( 100 );            // the trajectory rate
     double period = 1.0/100.0;        // the period
     double positionincrement = 0.001; // how much we move
-    ros::Duration time_from_start( 0.0 );
+    //ros::Duration time_from_start( 0.0 );
 
     bool readinitpose = true;                       // used to initialize setpose
     bool moving = false;
     tf::Pose setpose;                               // the destination setpose
-    tf::StampedTransform kinTrans;
+
     // This is the main trajectory loop
     // At each iteration it computes and publishes a new joint positions that
     // animate the motion of the robot
@@ -145,9 +156,7 @@ int main( int argc, char** argv ){
     while( nh.ok() ){
 
         // Read the current forward kinematics of the robot
-        // wiki.ros.org/tf/Tutorials/Writing%20a%20tf%20listener%20%28C%2B%2B%29
         tf::Pose current_pose;
-	tf::Pose trans_pose;
         try{
 
             // Change the name of the reference frame and target frame.
@@ -156,11 +165,14 @@ int main( int argc, char** argv ){
             std::string ref_frame( "base_link" );
             std::string tgt_frame( "ee_link" );
 
+	    //Wait for initial transform from initialization
+	    ros::Time t_zero = ros::Time(0);
             tf::StampedTransform transform;
-            listener.lookupTransform( ref_frame, tgt_frame, ros::Time::now(), transform );
+	    listener.waitForTransform( ref_frame, tgt_frame, t_zero, ros::Duration(0.8));
+            listener.lookupTransform( ref_frame, tgt_frame, t_zero, transform );
 
             // convert tf into ROS message information
-            // Note: tf is used to perform mathematicla calculation
+            // Note: tf is used to perform mathematical calculation
             // while ROS message is used for communication between publisher/subscriber
             // broadcaster etc.
             current_pose.setOrigin( transform.getOrigin() );
@@ -177,6 +189,7 @@ int main( int argc, char** argv ){
 
         // If the list is not empty,
         // Read a setpose from the list and keep both the translation and rotation
+	//If a new pose has not been sent, remain in the current pose
         if( !pointlist.empty() && !quaternionlist.empty() ){
 
             // set origin of the goal pose
@@ -194,29 +207,20 @@ int main( int argc, char** argv ){
             setpose.setRotation( tf::Quaternion(q_xf, q_yf, q_zf, q_wf));
             quaternionlist.pop_front();
 
-            moving = true;
-            joint_trajectory.points.clear();
-        }
-
-        // This is the translation left for the trajectory
-        tf::Point error = setpose.getOrigin() - current_pose.getOrigin();
-	
-        //  ** The inverse kinematics of UR5 for all six dofs is to be implemented.
-        //  ** Possible solutions are ik_fast in ur_kinematics (which suffers
-        //  ** from a 90% success rate), kdl_chainsolver, or the inverse kinematics
-        //  ** package in me530646_lab4.
-
-        // If the error is small enough to go to the destination
-        if( moving && positionincrement < error.length() ){
+	    // moving = true;
+	    // joint_trajectory.points.clear();
+        
 
             // Convert Pose to Affine3d to Affine3f to Matrix4f
             // You can see how complex it is even to convert Pose into
             // an element of SE3
-
 	    Eigen::Affine3d H0_6d;
             tf::poseTFToEigen( setpose, H0_6d);
             Eigen::Matrix4d H_M = H0_6d.matrix();
 	    Eigen::MatrixXf H_6 = H_M.cast <float> ();
+
+	    //Transform the pose into raw D-H parameters to generate the proper
+	    //inverse kinematic (IK) solutions
 	    Eigen::Matrix4f T_0;
 	    T_0 << -1.0, 0.0, 0.0, 0.0,
 	      0.0, -1.0, 0.0, 0.0,
@@ -228,12 +232,22 @@ int main( int argc, char** argv ){
 	      0.0, -1.0, 0.0, 0.0, 
 	      0.0, 0.0, 0.0, 1.0;
 	    H_6 = T_0*H_6*T_f;
+
+	    //Create memory for IK solutions
 	    double* q_sol[8];
 	    for (int i = 0; i < 8; ++i) {
 	      q_sol[i] = new double[6];
 	    }
+	    //Solve IK
 	    int num_sol = inverse(H_6, q_sol);
-	   
+	    
+	    //Ensure the pose is reachable
+	    if (num_sol == 0) {
+	      ROS_WARN("Desired pose is not reachable, choice ignored");
+	      jointstate = jointstate_init;
+	      continue;
+	    }
+	    //Compare the solutions to determine which requires the least amount of joint movement
 	    std::vector<double> ang_dist;
 	    double dists = 0;
 	    for (int i = 0; i < num_sol; i++)
@@ -246,41 +260,31 @@ int main( int argc, char** argv ){
 	      dists = 0;
 	    }
 
-	     //Return the iterator value for the smallest angular difference
+	    //Return the iterator value for the smallest angular difference
 	    int angs = std::distance(ang_dist.begin(),std::min_element(ang_dist.begin(), ang_dist.end()));
 	    
+	    //Update the joint positions
             for (int i = 0; i < 6; ++i)
             {
-	      //jointstate.position[i] = 0;
-	      jointstate.position[i] = q_sol[angs][i];
-	    }
-
-	    tf::StampedTransform transforms;  
-	    listener.lookupTransform( "base_link", "ee_link", ros::Time(0), transforms );
-	    trans_pose.setOrigin(transforms.getOrigin());
-	    trans_pose.setRotation(transforms.getRotation());
-	    Eigen::Affine3d H0_6d_1;
-            tf::poseTFToEigen( trans_pose, H0_6d_1);
-            Eigen::Matrix4d H_M_1 = H0_6d_1.matrix();
-	    ROS_INFO_STREAM("xt:" << H_M_1(0,3));
-	    ROS_INFO_STREAM("yt:" << H_M_1(1,3));
-	    ROS_INFO_STREAM("zt:" << H_M_1(2,3)); 
+	      //jointstate.position[i] = 0;	        
+	      jointstate.position[i] = q_sol[angs][i];	      
+	    }	   
 	   
-	    //ROS_INFO_STREAM("joints" << jointstate.position[0] << "   " <<  jointstate.position[1] <<"   " << jointstate.position[2] <<"   " << jointstate.position[3] <<"   " <<jointstate.position[4] <<"   " << jointstate.position[5]);
+	    //After pose is updated, change the initial position to current position
+	    startUp = false;
 	    jointstate_init = jointstate;
-
-        }
-        else{
-            jointstate = jointstate_init;
-            setpose = current_pose;
-            moving = false;
-        }
+	    // ROS_INFO_STREAM("joints" << jointstate_init.position[0] << "   " <<  jointstate_init.position[1] <<"   " << jointstate_init.position[2] <<"   " << jointstate_init.position[3] <<"   " <<jointstate_init.position[4] <<"   " << jointstate_init.position[5]);
+   
+	}
+	else {
+	  jointstate = jointstate_init;
+	}
 
         // publish the joint states
         jointstate.header.stamp = ros::Time::now();
         pub_jointstate.publish( jointstate );
 
-        //
+        // Go through callback functions
         ros::spinOnce();
 
         // sleep
