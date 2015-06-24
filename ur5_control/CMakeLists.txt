@@ -16,8 +16,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf_conversions
   ur_description
   ur5
-  rviz_plot
-  rviz_animate
   ur5_class
   inverse_ur5
 )

@@ -1,17 +1,105 @@
 #include <Eigen/Core>
 #include <ur5/utilities.h>
 #include <math.h>
-#include <rviz_plot/lab1.h>
-#include <rviz_animate/lab2.h>
 #include <ur5_class/lab3.h>
 #include <inverse_ur5/lab4.h>
 #include <functional>
 #include <algorithm>
+#include <iostream>
+#include <Eigen/Dense>
+#include <unsupported/Eigen/MatrixFunctions>
 #define PI M_PI
 #define approxZero 0.00001
 
 int sign(double x){
 	return (x > 0) - (x < 0);
+}
+
+/**
+ * Returns the 4x4 homogeneous transformation that represents a 
+ * translation of (x,y,z) and a rotation of (roll,pitch,yaw).
+ */
+Eigen::Matrix4f xf(double x, double y, double z, double roll, double pitch, double yaw){
+	
+	Eigen::Matrix4f T = Eigen::Matrix4f::Identity(4,4);
+	T.block<3,3>(0,0) = rpyr(roll, pitch, yaw);
+	T.block<3,1>(0,3) << x, y, z;
+	return T; 
+}
+
+/**
+ * Returns the matrix inverse to the given homogeneous transformation.
+ */
+Eigen::Matrix4f finv(Eigen::Matrix4f T){
+	
+	Eigen::Matrix4f invT = Eigen::Matrix4f::Identity(4,4);
+	Eigen::Matrix3f R = T.block<3,3>(0,0);
+	Eigen::Vector3f t = T.block<3,1>(0,3);
+	Eigen::Matrix3f R_t = R.transpose();
+	invT.block<3,3>(0,0) = R_t;
+	invT.block<3,1>(0,3) = -R_t*t;
+	return invT;
+}
+
+/**
+ * Returns the 3x3 skew-symmetric matrix that corresponds to vector e.
+ */
+Eigen::Matrix3f skew3(Eigen::Vector3f e){
+	Eigen::Matrix3f E;
+	E <<     0, -e(2),    e(1),
+		  e(2),     0,   -e(0),
+		 -e(1),  e(0),       0;
+	return E;
+}
+
+/**
+ * returns the 3x3 rotation matrix that represents successive 
+ * roll, pitch, and yaw rotations. (Should be yaw->pitch->roll)
+ */
+Eigen::Matrix3f rpyr(double roll, double pitch, double yaw){
+	
+	Eigen::Matrix3f R;
+	R = yawr(yaw)*pitchr(pitch)*rollr(roll);
+	return R;
+}
+
+/**
+ * Returns the 3x3 rotation matrix that represents a rotation about 
+ * the x axis (roll) of phi radians.
+ */
+ Eigen::Matrix3f rollr(double phi){
+
+ 	Eigen::Matrix3f R;
+ 	R << 1,        0,         0,
+ 	     0, cos(phi), -sin(phi),
+ 	     0, sin(phi),  cos(phi);
+ 	return R;
+ }
+
+/**
+ * Returns the 3x3 rotation matrix that represents a rotation about 
+ * the y axis (pitch) of theta radians.
+ */
+ Eigen::Matrix3f pitchr(double theta){
+
+ 	Eigen::Matrix3f R;
+ 	R << cos(theta),  0,  sin(theta),
+ 	              0,  1,           0,
+ 	    -sin(theta),  0,  cos(theta);
+ 	return R;		 
+ }
+
+/**
+ * Returns the 3x3 rotation matrix that represents a rotation about 
+ * the z axis (yaw) of psi radians.
+ */
+ Eigen::Matrix3f yawr(double psi){
+
+ 	Eigen::Matrix3f R;
+ 	R << cos(psi),  -sin(psi),  0,
+ 	     sin(psi),   cos(psi),  0,
+ 	            0,          0,  1;
+ 	return R;
 }
 
 Eigen::MatrixXf J(double q[6])

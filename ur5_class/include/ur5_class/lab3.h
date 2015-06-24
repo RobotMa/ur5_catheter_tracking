@@ -11,7 +11,7 @@ class UR5 {
 	//An array holding the names of the links
 	std::vector<std::string> link_names;
 	//Plotter for rviz
-	RvizPlotter rvizPlotter;
+	//	RvizPlotter rvizPlotter;
 	//Creating a publisher for the forward kinematics
 	ros::Publisher move_pb;
 	//Creating publisher for hand control
@@ -62,18 +62,6 @@ class UR5 {
 	void getPos(double *q);	
 
 	/**
-	 * Callback for receiving joint position from Rviz.
-	 */
-	void rvizPosCallback(const sensor_msgs::JointState state);	
-
-	/**
-	 * Plots the coordinate frames (according to D-H convention) for the
-	 * UR5 given a set of joint angles. Each frame is plotted relative to
-	 * fixed frame base_link.
-	 */	
-	void plotframes(double q[]);
-
-	/**
 	 * Close the UR5 gripper.
 	 */
 	void openHand();
@@ -88,7 +76,6 @@ class UR5 {
 	 * Denavit-Hartenberg parameters.
 	 */
 	static Eigen::Matrix4f dhf(double alpha, double a, double d, double theta);
-//static Eigen::Matrix4f dhf(double alpha, double a, double d, double theta, double off);
 };
 
 #endif

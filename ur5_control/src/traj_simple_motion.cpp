@@ -11,8 +11,6 @@
 
 #include <tf_conversions/tf_eigen.h>
 
-#include <rviz_plot/lab1.h>
-#include <rviz_animate/lab2.h>
 #include <ur5_class/lab3.h>
 #include <inverse_ur5/lab4.h>
 #include <std_msgs/Bool.h>

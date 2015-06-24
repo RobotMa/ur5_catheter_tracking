@@ -6,8 +6,6 @@
 #include <ur5/getRealPos.h>
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Float64.h>
-#include <rviz_plot/lab1.h>
-#include <rviz_animate/lab2.h>
 #include <ur5_class/lab3.h>
 
 #define PI 3.1415926
@@ -23,7 +21,7 @@ double UR5::off[] = {0,-PI/2,0,0,-PI/2,0};
  * Creates an instance of the class to allow plotting 
  * of the UR5 in rviz.
  */
-UR5::UR5(ros::NodeHandle &n):rvizPlotter(n){
+UR5::UR5(ros::NodeHandle &n){
  	fwd_pb = n.advertise<ur5::ur5_joints>("forwardKinematics", 10);
  	move_pb = n.advertise<sensor_msgs::JointState>("ur5_joint_state", 10);
 	hand_pb = n.advertise<std_msgs::Float64>("tilt_controller/command",10);
@@ -90,25 +88,9 @@ Eigen::Matrix4f UR5::fwd(double q[]){
 	
 	for(int i = 0; i < 6; i++)
 	{
-	  H_0_6 = H_0_6*dhf(alpha[i], a[i], d[i], q[i]);
-	  //H_0_6 = H_0_6*dhf(alpha[i], a[i], d[i], q[i],off[i]);  
+	  H_0_6 = H_0_6*dhf(alpha[i], a[i], d[i], q[i]);	  
 	}
 	return H_0_6;
-}
-
-/**
- * Plots the robot in rviz by defining its joint angles.
- */
- void UR5::plotfwd(double q[]){
-	ur5::ur5_joints j;
-	//j.q.push_back(q[0]);
-	j.q.push_back(q[0]-PI);
-	for(int i = 1; i < 6; i++)
-	{
-	  j.q.push_back(q[i]);
-	}
-	while(fwd_pb.getNumSubscribers() < 1){}
-	fwd_pb.publish(j);
 }
 
 /**
@@ -172,18 +154,4 @@ void UR5::closeHand()
 	hand_pb.publish(closeMsg);
 }
 
-/**
- * Plots the coordinate frames (according to D-H convention) for the
- * UR5 given a set of joint angles. Each frame is plotted relative to
- * fixed frame base_link. Use the strings stored in link_names for 
- * names of each frame 1-6.
- */	
- void UR5::plotframes(double q[]){
-	Eigen::Matrix4f H_total = Eigen::MatrixXf::Identity(4,4);
-	for(int i = 0; i < 6; i++)
-	{
-	  H_total = H_total*dhf(UR5::alpha[i],UR5::a[i],UR5::d[i],q[i]);
-	  //H_total = H_total*dhf(UR5::alpha[i],UR5::a[i],UR5::d[i],q[i], UR5::off[i]);
-		this->rvizPlotter.plotf(H_total,"base_link",link_names[i]);
-	}
-}
+
