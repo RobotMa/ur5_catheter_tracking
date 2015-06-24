@@ -17,12 +17,12 @@
   
   <node 
       pkg="ur5_control"
-      type="simple_motion"
-      name="simple_motion"
+      type="traj_simple_motion"
+      name="traj_simple_motion"
       output="screen" >
       <!--pkg="ur5_control" 
-      type="trajectory_full_state"
-      name="trajectory_full_state" 
+      type="simple_motion"
+      name="simple_motion" 
       output="screen" >-->
     <!--<remap from="joint_states" to="joint_trajectory"/>-->
   </node>

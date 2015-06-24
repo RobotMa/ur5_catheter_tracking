@@ -22,8 +22,6 @@
 #include <control_msgs/FollowJointTrajectoryAction.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
-//#include <ur_kinematics/ur_kin.h>
-
 
 //**TO-DO**
 //Implement a trajectory between the desired pose and initial pose
@@ -42,7 +40,7 @@ bool startUp = true;
 
 // This callback function is triggered each time that a set of pose is published.
 // The only thing it does is to copy the received 6D pose to the list
-// of poses
+// of poses 
 // Input: a new set pose (6D pose)
 void callback( const geometry_msgs::Pose& newpose ){
     geometry_msgs::Point newpoint;

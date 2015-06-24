@@ -121,6 +121,7 @@ include_directories(
 #add_executable( trajectory src/trajectory.cpp)
 #add_executable( trajectory_full_state src/trajectory_full_state.cpp)
 add_executable( simple_motion src/simple_motion.cpp)
+add_executable( traj_simple_motion src/traj_simple_motion.cpp)
 # add_executable( ur5_trajectory src/ur5_trajectory.cpp)
 
 ## Add cmake target dependencies of the executable/library
@@ -131,6 +132,7 @@ add_executable( simple_motion src/simple_motion.cpp)
 #target_link_libraries( trajectory ${catkin_LIBRARIES} )
 #target_link_libraries( trajectory_full_state ${catkin_LIBRARIES})
 target_link_libraries( simple_motion  ${catkin_LIBRARIES})
+target_link_libraries( traj_simple_motion  ${catkin_LIBRARIES})
 # target_link_libraries( ur5_trajectory ${catkin_LIBRARIES} )
 
 #############
