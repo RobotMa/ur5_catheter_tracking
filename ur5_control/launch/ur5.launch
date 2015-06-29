@@ -6,7 +6,8 @@
   <!--arg name="model" default="$(find ur5_control)/urdf/ur5_robot.urdf" /-->
 
   <param name="robot_description" textfile="$(arg model)" />
-  
+  <param name="solver_method" value="true" type="bool" />
+
   <node
       name="robot_state_publisher" 
       pkg="robot_state_publisher" 
