@@ -40,58 +40,54 @@ bool startUp = true;
 // positions
 // input: the input joint state
 // output: the 3x3 Jacobian (position only)
-void Jacobian( const sensor_msgs::JointState& jointstate, double J[3][3] ){
 
-    for( int r=0; r<3; r++ )
-        for( int c=0; c<3; c++ )
-            J[r][c] = 0.0;
+Eigen::MatrixXf invJacobian( const sensor_msgs::JointState& jointstate) {
+  double q_temp[6] = { jointstate.position[0], jointstate.position[1], jointstate.position[2], jointstate.position[3],
+		       jointstate.position[4], jointstate.position[5] };
+  Eigen::MatrixXf J(6,6);
+  Eigen::Matrix4f H06 = UR5::fwd(q_temp);
+  Eigen::Matrix4f H = Eigen::Matrix4f::Identity(4,4);
+  Eigen::Matrix4f Rev;
+  Rev << -1.0, 0.0, 0.0, 0.0,
+      0.0, -1.0, 0.0, 0.0,
+      0.0, 0.0, 1.0, 0.0, 
+      0.0, 0.0, 0.0, 1.0;
+  Eigen::Matrix4f Flip;
+  Flip << 0.0, -1.0, 0.0, 0.0,
+       0.0, 0.0, -1.0, 0.0,
+       1.0, 0.0, 0.0, 0.0, 
+       0.0, 0.0, 0.0, 1.0;
+  //H06 = Rev*H06*Flip; 
+  Eigen::Matrix4f H_temp;
+  for (int i = 0; i < 6; i++) {
+    H_temp = Rev*H;
+    // J.block<3,1>(0,i) = skew3(H_temp.block<3,1>(0,2))*(H06.block<3,1>(0,3) - H_temp.block<3,1>(0,3));
+    //J.block<3,1>(3,i) = H_temp.block<3,1>(0,2);
+    J.block<3,1>(0,i) = skew3(H.block<3,1>(0,2))*(H06.block<3,1>(0,3) - H.block<3,1>(0,3));
+    J.block<3,1>(3,i) = H.block<3,1>(0,2);
+    H = H*UR5::dhf(UR5::alpha[i], UR5::a[i], UR5::d[i], q_temp[i]);
+  }
 
-    double q1 = jointstate.position[0];
-    double q2 = jointstate.position[1];
-    double q3 = jointstate.position[2];
+  //Need to implement a decomposition
+  
+  Eigen::FullPivLU<Eigen::MatrixXf> lu;
+  lu.setThreshold(1e-7);
+  lu.compute(J);
+ 
 
-    // Fill the values of the Jacobian matrix J
-    J[0][0] = 0.4869*sin(q1)*sin(q2)*sin(q3) - 0.425*cos(q2)*sin(q1) - 0.19145*cos(q1) - 0.4869*cos(q2)*cos(q3)*sin(q1);
-    J[0][1] = -0.0001*cos(q1)*(4869.0*sin(q2 + q3) + 4250.0*sin(q2));
-    J[0][2] = -0.4869*sin(q2 + q3)*cos(q1);
-
-    J[1][0] = 0.425*cos(q1)*cos(q2) - 0.19145*sin(q1) + 0.4869*cos(q1)*cos(q2)*cos(q3) - 0.4869*cos(q1)*sin(q2)*sin(q3);
-    J[1][1] = -0.0001*sin(q1)*(4869.0*sin(q2 + q3) + 4250.0*sin(q2));
-    J[1][2] = -0.4869*sin(q2 + q3)*sin(q1);
-
-    J[2][0] = 0.0;
-    J[2][1] = -0.4869*cos(q2 + q3) - 0.425*cos(q2);
-    J[2][2] = -0.4869*cos(q2 + q3);
-
-}
-
-// Inverse a 3x3 matrix
-// input: A 3x3 matrix
-// output: A 3x3 matrix inverse
-// return the determinant inverse
-double Inverse( double A[3][3], double Ainverse[3][3] ){
-
-    double determinant = (  A[0][0]*( A[1][1]*A[2][2]-A[2][1]*A[1][2] ) -
-                            A[0][1]*( A[1][0]*A[2][2]-A[1][2]*A[2][0] ) +
-                            A[0][2]*( A[1][0]*A[2][1]-A[1][1]*A[2][0] ) );
-
-    double invdet = 1.0/determinant;
-
-    Ainverse[0][0] =  ( A[1][1]*A[2][2] - A[2][1]*A[1][2] )*invdet;
-    Ainverse[0][1] = -( A[0][1]*A[2][2] - A[0][2]*A[2][1] )*invdet;
-    Ainverse[0][2] =  ( A[0][1]*A[1][2] - A[0][2]*A[1][1] )*invdet;
-
-    Ainverse[1][0] = -( A[1][0]*A[2][2] - A[1][2]*A[2][0] )*invdet;
-    Ainverse[1][1] =  ( A[0][0]*A[2][2] - A[0][2]*A[2][0] )*invdet;
-    Ainverse[1][2] = -( A[0][0]*A[1][2] - A[1][0]*A[0][2] )*invdet;
-
-    Ainverse[2][0] =  ( A[1][0]*A[2][1] - A[2][0]*A[1][1] )*invdet;
-    Ainverse[2][1] = -( A[0][0]*A[2][1] - A[2][0]*A[0][1] )*invdet;
-    Ainverse[2][2] =  ( A[0][0]*A[1][1] - A[1][0]*A[0][1] )*invdet;
-
-    return determinant;
+  //Check to see if invJacobian is near singular
+  if (!lu.isInvertible()) {
+    std::cout << "Jacobian is near singular." << std::endl;
+    J += Eigen::MatrixXf::Identity(6,6)*0.0001;
+    lu.compute(J);
+  }
+ 
+  lu.inverse();
+  J = lu.matrixLU();
+  return J;
 
 }
+
 
 // This callback function is triggered each time that a set of pose is published.
 // The only thing it does is to copy the received 6D pose to the list
@@ -208,7 +204,7 @@ int main( int argc, char** argv ){
     // http://wiki.ros.org/roscpp/Overview/Time
     ros::Rate rate( 75 );            // the trajectory rate
     double period = 2.0/150.0;        // the period
-    double positionincrement = 1.0/100.0;
+    double positionincrement = 2.0/150.0;
     ros::Duration time_from_start( 0.0 );
 
     bool readinitpose = true;                       // used to initialize setpose
@@ -352,7 +348,7 @@ int main( int argc, char** argv ){
 	    }	   
 	    //diff /= *std::max_element(signed_diff.begin(),signed_diff.end())*200;
 	    diff /= sqrt(signed_diff)*100;
-	    //Defualt to jointspace method
+	    //Default to jointspace method
 	    if ( ros::param::get("solver_method", solver) ) {   }
 	    else { ros::param::set("solver_method", true);  }
 
@@ -383,39 +379,42 @@ int main( int argc, char** argv ){
 	    }
 	  }
 	  //Jacobian-based update method
-	  else {
-	    tf::Point error = setpose.getOrigin() - current_pose.getOrigin();
+	  else { 
+	    // Compute the Jacobian
+	    Eigen::MatrixXf Ji = invJacobian(jointstate);
+	  
+ 	    tf::Point error = setpose.getOrigin() - current_pose.getOrigin();
+	    double roll_setpose, roll_current_pose, pitch_current_pose, pitch_setpose, yaw_current_pose, yaw_setpose;
+	    tf::Matrix3x3(setpose.getRotation()).getRPY(roll_setpose, pitch_setpose, yaw_setpose);
+	    tf::Matrix3x3(current_pose.getRotation()).getRPY(roll_current_pose, pitch_current_pose, yaw_current_pose);
+	    tf::Point rot_error;
+	    rot_error.setX(roll_setpose - roll_current_pose);
+	    rot_error.setY(pitch_setpose - pitch_current_pose);
+	    rot_error.setZ(yaw_setpose - yaw_current_pose);
 	    tf::Point v = ( error / error.length() ) * positionincrement;
-
-            double J[3][3], Ji[3][3];
-
-            // Compute the Jacobian
-            Jacobian( jointstate, J );
-
-            // Compute the inverse Jacobian. The inverse return the
-            // value of the determinant.
-            if( fabs(Inverse( J, Ji )) < 1e-09 )
-            { std::cout << "Jacobian is near singular." << std::endl; }
+	    tf::Point w = ( rot_error / rot_error.length() ) * positionincrement;
+	    //add rotational velocity?
+           
+         
 
    
            // This is the inverse kinematics realization for the translation
             //   of UR5 by incrementing the joint postions
 
 	     // Compute the joint velocity by multiplying the (Ji v)
-            double qd[3];
-            qd[0] = Ji[0][0]*v[0] + Ji[0][1]*v[1] + Ji[0][2]*v[2];
+	    Eigen::VectorXf qd(6);
+	    Eigen::VectorXf vel(6);
+	    vel << v[0], v[1], v[2], 0, 0, 0;//w[0], w[1], w[2];
+	    qd = Ji*vel;
+	      /*qd[0] = Ji[0][0]*v[0] + Ji[0][1]*v[1] + Ji[0][2]*v[2];
             qd[1] = Ji[1][0]*v[0] + Ji[1][1]*v[1] + Ji[1][2]*v[2];
-            qd[2] = Ji[2][0]*v[0] + Ji[2][1]*v[1] + Ji[2][2]*v[2];
+            qd[2] = Ji[2][0]*v[0] + Ji[2][1]*v[1] + Ji[2][2]*v[2];*/
 
             // increment the joint positions
-            jointstate.position[0] += qd[0];
-            jointstate.position[1] += qd[1];
-            jointstate.position[2] += qd[2];
-
-	    //While waiting to derive full Jacobian, update last 3 joints by incrementing (need to fix timing issue)
-	    for (int i = 3; i < 6; i++) {
-	      jointstate.position[i] += diff(i); 
+            for (int j = 0; j < 3; j++) {
+	      jointstate.position[j] += qd(j);
 	    }
+ 
 	    
 	  }
 
@@ -438,8 +437,8 @@ int main( int argc, char** argv ){
 	    H_cur_rot(2,0), H_cur_rot(2,1), H_cur_rot(2,2);
 	  Eigen::Matrix3f rot_id;
 	  rot_id = rot*cur_rot;
-	  float rot_error = sqrt( (rot_id(0,0) - 1)*(rot_id(0,0) - 1) + (rot_id(1,1) - 1)*(rot_id(1,1) - 1) + (rot_id(2,2) - 1)*(rot_id(2,2) - 1) );
-	  if (pos_error.length() < 1.0/100.0 && rot_error < 0.1) { // 0.001 && rot_error < 0.05) {
+	  float trans_rot_error = sqrt( (rot_id(0,0) - 1)*(rot_id(0,0) - 1) + (rot_id(1,1) - 1)*(rot_id(1,1) - 1) + (rot_id(2,2) - 1)*(rot_id(2,2) - 1) );
+	  if (pos_error.length() < 0.1) {//(pos_error.length() < 0.01 && trans_rot_error < 0.1) { // 0.001 && rot_error < 0.05) {
 	    moving = false;
 	    if (solver) {
 	      point.positions = des_jointstate.position;
