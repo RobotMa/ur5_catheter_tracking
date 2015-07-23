@@ -9,8 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   ur5
   std_msgs
-  rviz_plot
-  rviz_animate
 )
 
 find_package(cmake_modules REQUIRED) # Required by Indigo
@@ -110,8 +108,8 @@ add_library(ur5_class src/lab3.cpp)
 target_link_libraries(ur5_class ${catkin_LIBRARIES})
 
 ## Declare a cpp executable
-add_executable(lab3_main src/lab3_main.cpp src/lab3.cpp)
-target_link_libraries(lab3_main ${catkin_LIBRARIES})
+#add_executable(lab3_main src/lab3_main.cpp src/lab3.cpp)
+#target_link_libraries(lab3_main ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
