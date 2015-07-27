@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   inverse_ur5
 )
 
+find_package(cmake_modules REQUIRED)
 find_package(Eigen REQUIRED)
 
 ## System dependencies are found with CMake's conventions
