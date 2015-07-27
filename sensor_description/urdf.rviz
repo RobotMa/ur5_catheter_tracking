@@ -9,11 +9,13 @@ Panels:
         - /Grid1
         - /TF1
         - /TF1/Frames1
-        - /TF1/Frames1/segment_point1
         - /TF1/Tree1
         - /RobotModel1
+        - /RobotModel1/Links1
         - /RobotModel2
+        - /RobotModel2/Links1
         - /RobotModel3
+        - /RobotModel3/Links1
       Splitter Ratio: 0.433198
     Tree Height: 495
   - Class: rviz/Selection
@@ -67,7 +69,7 @@ Visualization Manager:
           Value: true
         forearm_link:
           Value: true
-        segment_point:
+        phantom_base_link:
           Value: true
         shoulder_link:
           Value: true
@@ -99,8 +101,9 @@ Visualization Manager:
                       wrist_3_link:
                         ee_link:
                           ultrasound_sensor:
-                            segment_point:
-                              {}
+                            {}
+          phantom_base_link:
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 0.9
@@ -224,7 +227,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.18598
+      Distance: 1.66622
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
@@ -236,10 +239,10 @@ Visualization Manager:
         Z: 0
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.819798
+      Pitch: 0.349798
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.855411
+      Yaw: 5.95359
     Saved: ~
 Window Geometry:
   Displays:
@@ -257,5 +260,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1280
-  X: 0
-  Y: 24
+  X: 2116
+  Y: 265

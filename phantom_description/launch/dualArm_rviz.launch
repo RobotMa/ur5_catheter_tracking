@@ -1,7 +1,6 @@
 <launch>
 	<!-- upload urdf -->
 
-
 	<group ns="ur5_1" >
 
 		<arg name="gui" default="True" />
@@ -11,7 +10,10 @@
 		
 		<param name="robot_description" textfile="$(find sensor_description)/urdf/ur5_eef.urdf" />
 
-		<include file="$(find sensor_description)/launch/sensor_rviz.launch" />
+		<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+
+		<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+		<!--include file="$(find sensor_description)/launch/sensor_rviz.launch" /-->
 
 	</group>
 
@@ -26,18 +28,22 @@
 
 		<param name="robot_description" textfile="$(find sensor_description)/urdf/ur5_eef.urdf" />
 
-		<include file="$(find sensor_description)/launch/sensor_rviz.launch" />
+		<!--include file="$(find sensor_description)/launch/sensor_rviz.launch" /-->
+		<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+
+		<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
 
 	</group>
 
-	<node if="true" pkg="tf" type="static_transform_publisher" name="world_robot2_base_broadcaster" args="0 1.5 0 0 0 0 /world /ur5_2/world 100" />
+	<node pkg="tf" type="static_transform_publisher" name="world_robot2_base_broadcaster" args="0 1.5 0 0 0 0 /world /ur5_2/world 100" />
 
 	
 	<param name="robot_description" textfile="$(find phantom_description)/urdf/phantom.urdf" />
+
 	<node pkg="tf" type="static_transform_publisher" name="world_phantom_base_broadcaster" args="0 0.75 0 0 0 0 /world /phantom_base_link 100" />
 
-	<node if="false" name="rviz" pkg="rviz" type="rviz" />
+	<!--node if="false" name="rviz" pkg="rviz" type="rviz" /-->
 
-	<node if="true" name="rviz" pkg="rviz" type="rviz" args="-d $(find sensor_description)/urdf.rviz" required="true" />
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find sensor_description)/urdf.rviz" required="true" />
 
 </launch>

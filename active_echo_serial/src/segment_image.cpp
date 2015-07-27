@@ -15,15 +15,15 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
     tf::Transform transform;
 
     double element_w = 0.45; // mm
-    double AE_SRate = 80; // mhz
+    double AE_SRate = 80*1000000; // mhz
     double SOS = 1480; // m/s
 
     // Linear ultrasound probe
     // Note: x and y are flipped so that the reference frame of the probe
     // and the robot based will be parallel to each while at working status
-    double y = ( msg->l_ta - 64.5)*element_w; // Unit:mm
+    double y = ( msg->l_ta - 64.5)*element_w/1000; // Unit:m
     double x = 0.0; // Assume that the segmented point falls within the plane
-    double z = 1000*(msg->dly)*(1/AE_SRate)*SOS; // Unit:mm
+    double z = -(msg->dly)*(1/AE_SRate)*SOS; // Unit:m
 
 //    geometry_msgs::Point segment_point;
 //    segment_point.x = x;

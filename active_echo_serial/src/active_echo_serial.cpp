@@ -199,7 +199,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::Publisher n_pub = n.advertise<active_echo_serial::Num>("active_echo_data", 20);
 
-	ros::Rate loop_rate(20);
+	ros::Rate loop_rate(50);
 
 	// Define the names of the four output integers
 	std::string l_all();
