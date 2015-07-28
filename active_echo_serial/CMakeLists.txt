@@ -105,6 +105,7 @@ catkin_package(
 ## Declare a cpp executable
 add_executable(active_echo_serial src/active_echo_serial.cpp)
 add_executable(segment_image src/segment_image.cpp)
+add_executable(segment_pose_publisher src/segment_pose_publisher.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -116,6 +117,9 @@ target_link_libraries(active_echo_serial
   ${catkin_LIBRARIES}
 )
 target_link_libraries(segment_image
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(segment_pose_publisher
   ${catkin_LIBRARIES}
 )
 
