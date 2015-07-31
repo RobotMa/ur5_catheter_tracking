@@ -186,13 +186,6 @@ int main(int argc, char **argv)
 {
 	// Open the serial port (This should be serial port for the active echo microcontroller)
 	std::string portname = "/dev/ttyUSB0";
-	int fd = open_port(portname);
-
-	std::cout << fd << std::endl;
-	int res;
-
-	// Set the buad rate, data bits and stop bit
-	setup_port(fd, 921600, 8, 1, false, false);
 
 	ros::init(argc, argv, "active_echo_publisher");
 
@@ -209,59 +202,78 @@ int main(int argc, char **argv)
 
 	while(ros::ok())
 	{
-		char buf[255];
-		// Initialize buf
-		for (int i = 0; i< 255; i++)
+		// Keep checking the existence of serial port 
+		int fd = open_port(portname);
+
+		std::cout << fd << std::endl;
+
+		int res;
+
+		// Set the buad rate, data bits and stop bit
+		setup_port(fd, 921600, 8, 1, false, false);
+
+
+		if ( fd!=-1 )
 		{
-			buf[i] = 0;
+			/* 
+			   Publish to active_echo_serial/Num Rostopic if serial communication
+			   is established
+			 */
+
+			char buf[255];
+			// Initialize buf
+			for (int i = 0; i< 255; i++)
+			{
+				buf[i] = 0;
+			}
+
+			// Get the serial port signal
+			// res: number of characters received
+			res = read(fd, buf, 255);
+			std::cout << buf << std::endl;
+
+			// Convert char buf to string full_info
+			std::string full_info(buf);
+
+			// Initialize active echo ROS msg
+			active_echo_serial::Num msg;
+
+			// Parse the string into four variables once the serial
+			// port is able to get a string with full length (46)
+			if (full_info.length() == 46)
+			{
+				// std::cout << full_info.at(4) << std::endl;
+				std::string l_all = full_info.substr(6,6);
+				std::string  l_ta = full_info.substr(18,6);
+				std::string   dly = full_info.substr(29,6);
+				std::string    tc = full_info.substr(39,6);
+				std::cout << l_all << std::endl;
+				std::cout <<  l_ta << std::endl;
+				std::cout <<   dly << std::endl;
+				std::cout <<    tc << std::endl;
+
+				std::string::size_type sz; // alias of size_t
+
+				// Convert string numbers to integers
+				int l_all_v = atoi(l_all.c_str());
+				int  l_ta_v = atoi( l_ta.c_str());
+				int   dly_v = atoi(  dly.c_str());
+				int    tc_v = atoi(   tc.c_str());
+
+				msg.l_all = l_all_v;
+				msg.l_ta  = l_ta_v;
+				msg.dly   = dly_v;
+				msg.tc    = tc_v;
+				std::cout << l_all_v << " " << dly_v <<std::endl;
+
+
+			}
+
+			n_pub.publish(msg);
 		}
-
-		// Get the serial port signal
-		// res: number of characters received
-		res = read(fd, buf, 255);
-		std::cout << buf << std::endl;
-
-		// Convert char buf to string full_info
-		std::string full_info(buf);
-		
-		// Initialize active echo ROS msg
-		active_echo_serial::Num msg;
-
-		// Parse the string into four variables once the serial
-		// port is able to get a string with full length (46)
-		if (full_info.length() == 46)
-		{
-			// std::cout << full_info.at(4) << std::endl;
-			std::string l_all = full_info.substr(6,6);
-			std::string  l_ta = full_info.substr(18,6);
-			std::string   dly = full_info.substr(29,6);
-			std::string    tc = full_info.substr(39,6);
-			std::cout << l_all << std::endl;
-			std::cout <<  l_ta << std::endl;
-			std::cout <<   dly << std::endl;
-			std::cout <<    tc << std::endl;
-
-			std::string::size_type sz; // alias of size_t
-
-			// Convert string numbers to integers
-			int l_all_v = atoi(l_all.c_str());
-			int  l_ta_v = atoi( l_ta.c_str());
-			int   dly_v = atoi(  dly.c_str());
-			int    tc_v = atoi(   tc.c_str());
-			
-			msg.l_all = l_all_v;
-			msg.l_ta  = l_ta_v;
-			msg.dly   = dly_v;
-			msg.tc    = tc_v;
-			std::cout << l_all_v << " " << dly_v <<std::endl;
-
-
-		}
-
-		n_pub.publish(msg);
+		else { std::cout << "No active echo serial port detected." << std::endl; }
 		loop_rate.sleep();
-
 	}
 
-	return 0;
+return 0;
 }

@@ -23,12 +23,14 @@ int main(int argc, char **argv)
 	ros::Rate r(10); // 10 Hz
 	bool pub = true; // Publish to setpose if a valid des_pose is obtained 
 
-	while (n.ok()){
+	while ( ros::ok() ){
 
 
 		tf::Transform transform_be;
 		tf::StampedTransform transform_ue;
 		tf::StampedTransform transform_bs;
+
+		ROS_INFO("segment_pose_publisher is running");
 
 		try{
 			// Calculate the new pose of /ee_link based on /segment_point
@@ -83,7 +85,7 @@ int main(int argc, char **argv)
 			std::cout << transform_bs.getOrigin().z() << std::endl;
 			pub_pose.publish( des_pose );			
 		}
-		else { }
+		else { std::cout << "Not able to publish to /setpose" << std::endl; }
 		// tf is messed up 	
 
 		/*
@@ -101,7 +103,7 @@ int main(int argc, char **argv)
 
 		   pub_pose.publish( des_pose );	
 		 */
-		ros::spin();
+		ros::spinOnce();
 
 		r.sleep();
 

@@ -14,7 +14,11 @@
 void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 {
 	static tf::TransformBroadcaster br;
+	
+	// Transform to be broadcasted to ultrasound_sensor 
 	tf::Transform transform;
+	tf::Quaternion q;
+
 	bool mid_plane = false;
 
 	double element_w = 0.45; // mm
@@ -39,12 +43,14 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 		double a = 39.6629;
 		double b = -0.0277;
 		double c = 3.1947; 
-		x = sqrt(-pow(c,2)*log(msg->tc/a)) + b;
+		x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000; // m
 	}
 	y = ( msg->l_ta - 64.5)*element_w/1000; // Unit:m
 	z = -(msg->dly)*(1/AE_SRate)*SOS; // Unit:m
 
 	std::cout << "Value of x is " << x << std::endl;
+	std::cout << "Value of y is " << y << std::endl;
+	std::cout << "Value of z is " << z << std::endl;
 
 	if ( !isnan(x) )
 	{
@@ -58,7 +64,11 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 	}
 
 	if (broadcast == true) {
+		
 		transform.setOrigin( tf::Vector3(x, y, z));
+		q.setRPY(0, 0, 0);
+		transform. setRotation(q);
+					
 		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),"ultrasound_sensor", "segment_point"));
 
 	}
