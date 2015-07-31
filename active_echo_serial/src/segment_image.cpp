@@ -4,7 +4,8 @@
 #include <tf/transform_broadcaster.h>
 #include <math.h>
 #include <active_echo_serial/Num.h> // Include message header file
-
+#include <dynamic_reconfigure/server.h> //
+#include <dynamic_reconfig/ActiveEchoConfig.h> //
 
 
 
