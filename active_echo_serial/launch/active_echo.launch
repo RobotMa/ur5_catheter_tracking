@@ -11,4 +11,9 @@
               name = "segment_image">
 	</node>
 
+	<node pkg  = "active_echo_serial"
+              type = "segment_pose_publisher"
+	      name = "segment_pose_publisher">
+	</node>
+
 </launch>

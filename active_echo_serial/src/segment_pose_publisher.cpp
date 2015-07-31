@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 	tf::TransformListener listener_1;
 	tf::TransformListener listener_2; // Add a 2nd transform listener trying to fix messed up tf
 
-	ros::Rate r(10); // 10 Hz
+	ros::Rate r(1); // 10 Hz
 	bool pub = true; // Publish to setpose if a valid des_pose is obtained 
 
 	while ( ros::ok() ){
@@ -65,12 +65,12 @@ int main(int argc, char **argv)
 		}
 		catch(tf::TransformException ex)
 		{ std::cout << ex.what() << std::endl; 
-		  pub = false;	
+			pub = false;	
 		}
 
-		if (pub == true)
-		{
-			
+		if (pub == true) {
+
+			// Convert tf::Transform to geometry_msgs::Pose for publishing
 			geometry_msgs::Pose des_pose;
 
 			des_pose.position.x =  transform_be.getOrigin().x();
@@ -86,23 +86,7 @@ int main(int argc, char **argv)
 			pub_pose.publish( des_pose );			
 		}
 		else { std::cout << "Not able to publish to /setpose" << std::endl; }
-		// tf is messed up 	
 
-		/*
-		   geometry_msgs::Pose des_pose;
-
-		   des_pose.position.x =  transform_be.getOrigin().x();
-		   des_pose.position.y =  transform_be.getOrigin().y();
-		   des_pose.position.z =  transform_be.getOrigin().z();
-
-		   des_pose.orientation.x = transform_be.getRotation().x();
-		   des_pose.orientation.y = transform_be.getRotation().y();
-		   des_pose.orientation.z = transform_be.getRotation().z();
-		   des_pose.orientation.w = transform_be.getRotation().w();
-
-
-		   pub_pose.publish( des_pose );	
-		 */
 		ros::spinOnce();
 
 		r.sleep();
