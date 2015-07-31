@@ -20,34 +20,52 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 	double element_w = 0.45; // mm
 	double AE_SRate = 80*pow(10, 6); // hz
 	double SOS = 1480; // m/s
-
+	bool broadcast = true;
 	// Linear ultrasound probe
 	// Note: x and y are flipped so that the reference frame of the probe
 	// and the robot based will be parallel to each while at working status
+	
+	// Initialize x, y, and z
 	double x = 0.0;
-	if (mid_plane == true)
-	{
+	double y = 0.0;
+	double z = 0.0;
+
+	try {
+	if (mid_plane == true) {
 		x = 0.0; // Assume that the segmented point falls within the mid-plane
 	}
-	else
-	{
+	else {
 		// Gaussian fitting paramters a, b and c; Currently calculated from the gaussianFitting.m file 
 		double a = 39.6629;
 		double b = -0.0277;
 		double c = 3.1947; 
 		x = sqrt(-pow(c,2)*log(msg->tc/a)) + b;
 	}
-	double y = ( msg->l_ta - 64.5)*element_w/1000; // Unit:m
-	double z = -(msg->dly)*(1/AE_SRate)*SOS; // Unit:m
+	y = ( msg->l_ta - 64.5)*element_w/1000; // Unit:m
+	z = -(msg->dly)*(1/AE_SRate)*SOS; // Unit:m
 
-	//    geometry_msgs::Point segment_point;
-	//    segment_point.x = x;
-	//    segment_point.y = y;
-	//    segment_point.z = z;
-	transform.setOrigin( tf::Vector3(x, y, z));
-	br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),"ultrasound_sensor", "segment_point"));
+	std::cout << "Value of x is " << x << std::endl;
 
+	if ( !isnan(x) )
+	{
 
+	}
+	else { throw false; }
+	}
+	catch (bool fail) { 
+		std::cout << "Rostopic /active_echo_data is not published, or tc is nonpositive." << std::endl;
+		broadcast = false;
+	}
+
+	if (broadcast == true) {
+		transform.setOrigin( tf::Vector3(x, y, z));
+		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),"ultrasound_sensor", "segment_point"));
+
+	}
+	else 
+	{
+		std::cout << "Broadcast to /segment_point failed ";
+	}
 	// Spherical ultrasound probe
 	//    int offset = -290;
 
