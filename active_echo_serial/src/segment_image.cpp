@@ -12,11 +12,11 @@
 //This node subscribes to the ROS topic /active_echo_data and publishes
 //the coordinate information of the segmented point.
  
-static bool mid_plane = true;
+static bool g_mid_plane = true;
 
 void dynamiconfigCallback(dynamic_reconfig::ultrasound_ur5Config &config, uint32_t level)
 {
-	mid_plane = config.bool_param;
+	g_mid_plane = config.bool_param;
 	ROS_INFO("Reconfigure Request: %s",
 		  config.bool_param?"True":"False");
 }
@@ -47,7 +47,7 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 	double z = 0.0;
 
 	try {
-		if (mid_plane == true) {
+		if (g_mid_plane == true) {
 			x = 0.0; // Assume that the segmented point falls within the mid-plane
 		}
 		else {
@@ -88,7 +88,7 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 	else {	std::cout << "Broadcast to /segment_point failed "; }
 
 	// Test whehter dynamic reconfigure changes the value of mid_plane
-	std::cout << "Value of mid_plane is " << std::boolalpha << mid_plane << std::endl;
+	std::cout << "Value of mid_plane is " << std::boolalpha << g_mid_plane << std::endl;
 	// Spherical ultrasound probe
 	//    int offset = -290;
 

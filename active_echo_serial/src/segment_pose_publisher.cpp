@@ -7,8 +7,12 @@
 #include <geometry_msgs/Point.h>
 #include <math.h>
 
+#include <dynamic_reconfigure/server.h>
+#include <dynamic_reconfig/ultrasound_ur5Config.h>
+
 // This node uses the pose of /segment_point to calculate the new desired pose
 // of /ee_link 
+
 
 int main(int argc, char **argv)
 {
@@ -58,6 +62,7 @@ int main(int argc, char **argv)
 			std::cout << transform_bs.getOrigin().y() << std::endl;	
 			std::cout << transform_bs.getOrigin().z() << std::endl;
 
+			// Calculate the new pose for the end-effector
 			transform_be.mult(transform_bs, transform_ue);
 
 
