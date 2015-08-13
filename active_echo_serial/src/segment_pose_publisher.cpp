@@ -13,6 +13,14 @@
 // This node uses the pose of /segment_point to calculate the new desired pose
 // of /ee_link 
 
+// Track the segmented point
+static bool g_track = false;
+
+void dynamiconfigCallback(dynamic_reconfig::ultrasound_ur5Config &config, uint32_t level)
+{
+	g_track = config.enable_tracking;
+	ROS_INFO("Reconfigure Request: %s", config.enable_tracking?"True":"False");
+}
 
 int main(int argc, char **argv)
 {
@@ -24,8 +32,15 @@ int main(int argc, char **argv)
 	tf::TransformListener listener_1;
 	tf::TransformListener listener_2; // Add a 2nd transform listener trying to fix messed up tf
 
+	// Dynamic reconfigure callback 
+	dynamic_reconfigure::Server<dynamic_reconfig::ultrasound_ur5Config> server;
+	dynamic_reconfigure::Server<dynamic_reconfig::ultrasound_ur5Config>::CallbackType f;
+
+	f = boost::bind(&dynamiconfigCallback, _1, _2);
+	server.setCallback(f);
+
 	ros::Rate r(1); // 10 Hz
-	bool pub = true; // Publish to setpose if a valid des_pose is obtained 
+	// bool pub = true; // Publish to setpose if a valid des_pose is obtained 
 
 	while ( ros::ok() ){
 
@@ -36,6 +51,8 @@ int main(int argc, char **argv)
 
 		ROS_INFO("segment_pose_publisher is running");
 
+		std::cout << "Value of track is: " << std::boolalpha << g_track << std::endl;
+
 		try{
 			// Calculate the new pose of /ee_link based on /segment_point
 			// Look up the transformation between /ee_link and /base_link
@@ -43,8 +60,6 @@ int main(int argc, char **argv)
 			std::string tge_frame( "ee_link" );
 			std::string tgs_frame( "segment_point" );
 			std::string tgu_frame( "ultrasound_sensor" );
-
-
 
 			listener_1.waitForTransform( tge_frame, tgu_frame, ros::Time(0), ros::Duration(0.8) );
 			listener_1.lookupTransform( tgu_frame, tge_frame, ros::Time(0), transform_ue );
@@ -65,15 +80,14 @@ int main(int argc, char **argv)
 			// Calculate the new pose for the end-effector
 			transform_be.mult(transform_bs, transform_ue);
 
-
-
 		}
 		catch(tf::TransformException ex)
 		{ std::cout << ex.what() << std::endl; 
-			pub = false;	
+			g_track = false;	
 		}
 
-		if (pub == true) {
+
+		if (g_track == true) {
 
 			// Convert tf::Transform to geometry_msgs::Pose for publishing
 			geometry_msgs::Pose des_pose;

@@ -16,9 +16,9 @@ static bool g_mid_plane = true;
 
 void dynamiconfigCallback(dynamic_reconfig::ultrasound_ur5Config &config, uint32_t level)
 {
-	g_mid_plane = config.bool_param;
+	g_mid_plane = config.in_plane_assumption;
 	ROS_INFO("Reconfigure Request: %s",
-		  config.bool_param?"True":"False");
+		  config.in_plane_assumption?"True":"False");
 }
 
 
