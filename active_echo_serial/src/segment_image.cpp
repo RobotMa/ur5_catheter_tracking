@@ -1,26 +1,37 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+#include <iostream>
 #include <geometry_msgs/Point.h>
 #include <tf/transform_broadcaster.h>
 #include <math.h>
-#include <active_echo_serial/Num.h> // Include message header file
-#include <dynamic_reconfigure/server.h> //
-#include <dynamic_reconfig/ActiveEchoConfig.h> //
-
+#include <active_echo_serial/Num.h> // Active Echo Mmessage Header File
+#include <dynamic_reconfigure/server.h> // Dynamic Reconfigure Header File
+#include <dynamic_reconfig/ultrasound_ur5Config.h> // Ultra-UR5 Dynamic Reconfigure Header File
 
 
 //This node subscribes to the ROS topic /active_echo_data and publishes
 //the coordinate information of the segmented point.
+ 
+static bool mid_plane = true;
+
+void dynamiconfigCallback(dynamic_reconfig::ultrasound_ur5Config &config, uint32_t level)
+{
+	mid_plane = config.bool_param;
+	ROS_INFO("Reconfigure Request: %s",
+		  config.bool_param?"True":"False");
+}
+
 
 void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 {
 	static tf::TransformBroadcaster br;
-
+	
+	
 	// Transform to be broadcasted to ultrasound_sensor 
 	tf::Transform transform;
 	tf::Quaternion q;
 
-	bool mid_plane = false;
+	// bool mid_plane = false;
 
 	double element_w = 0.45; // mm
 	double AE_SRate = 80*pow(10, 6); // hz
@@ -75,6 +86,9 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 
 	}
 	else {	std::cout << "Broadcast to /segment_point failed "; }
+
+	// Test whehter dynamic reconfigure changes the value of mid_plane
+	std::cout << "Value of mid_plane is " << std::boolalpha << mid_plane << std::endl;
 	// Spherical ultrasound probe
 	//    int offset = -290;
 
@@ -91,6 +105,12 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 
 	ros::Subscriber sub = n.subscribe("active_echo_data", 100, segmentCallback);
+	
+	dynamic_reconfigure::Server<dynamic_reconfig::ultrasound_ur5Config> server;
+	dynamic_reconfigure::Server<dynamic_reconfig::ultrasound_ur5Config>::CallbackType f;
+
+	f = boost::bind(&dynamiconfigCallback, _1, _2);
+    server.setCallback(f);
 
 	ros::spin();
 
