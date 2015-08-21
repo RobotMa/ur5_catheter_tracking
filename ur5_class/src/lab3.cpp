@@ -51,12 +51,6 @@ Eigen::Matrix4f UR5::dhf(double alpha, double a, double d, double theta){
 	               0,   	    0, 1, 0, 
 	               0,	    0, 0, 1;
 
-	/*Rz << cos(theta+off), -sin(theta+off), 0, 0, 
-	      sin(theta+off),  cos(theta+off), 0, 0, 
-	               0,   	    0, 1, 0, 
-	               0,	    0, 0, 1;
-	*/
-
 	//Creating the matrix which describes the translation of d along Z_i-1
 	Eigen::Matrix4f Tz = Eigen::MatrixXf::Identity(4,4);
 	Tz.col(3) = Eigen::Vector4f(0,0,d,1); 

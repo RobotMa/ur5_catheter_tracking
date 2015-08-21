@@ -1,6 +1,9 @@
 #include <ros/ros.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
+//#include <eigen-eigen-bdd17ee3b1b3/Eigen/Dense>
+//#include <eigen-eigen-bdd17ee3b1b3/Eigen/Core>
+//#include <eigen-eigen-bdd17ee3b1b3/unsupported/Eigen/MatrixFunctions>
 #include <unsupported/Eigen/MatrixFunctions>
 
 #include <vector>
@@ -21,10 +24,21 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
 
+
+#define PI 3.1415926
+/*
+//An array of the six alpha D-H parameters for the UR5
+double UR5::alpha[] = {PI/2,0,0,PI/2,-PI/2,0};
+//An array of the six a D-H parameters for the UR5
+double UR5::a[] = {0,-0.425,-0.39225,0,0,0};
+//An array of the six d D-H parameters for the UR5
+double UR5::d[] = {0.089159,0,0,0.10915,0.09465,0.0823};
+double UR5::off[] = {0,-PI/2,0,0,-PI/2,0};
+*/
+
 //**TO-DO**
 //[1] - Implement a check to avoid moving through or close to singularities
 //***************************************************************
-
 
 // global list to hold the setposes. Not very thread safe but it's fine.
 // **In ROS, Pose is a data structure composed of Point position and Quaternion
@@ -42,49 +56,152 @@ bool startUp = true;
 // output: the 3x3 Jacobian (position only)
 
 Eigen::MatrixXf invJacobian( const sensor_msgs::JointState& jointstate) {
-  double q_temp[6] = { jointstate.position[0], jointstate.position[1], jointstate.position[2], jointstate.position[3],
+  double q[6] = { jointstate.position[0], jointstate.position[1], jointstate.position[2], jointstate.position[3],
 		       jointstate.position[4], jointstate.position[5] };
   Eigen::MatrixXf J(6,6);
-  Eigen::Matrix4f H06 = UR5::fwd(q_temp);
+  Eigen::Matrix4f H06 = UR5::fwd(q);
   Eigen::Matrix4f H = Eigen::Matrix4f::Identity(4,4);
   Eigen::Matrix4f Rev;
   Rev << -1.0, 0.0, 0.0, 0.0,
       0.0, -1.0, 0.0, 0.0,
       0.0, 0.0, 1.0, 0.0, 
       0.0, 0.0, 0.0, 1.0;
-  Eigen::Matrix4f Flip;
-  Flip << 0.0, -1.0, 0.0, 0.0,
-       0.0, 0.0, -1.0, 0.0,
-       1.0, 0.0, 0.0, 0.0, 
-       0.0, 0.0, 0.0, 1.0;
-  //H06 = Rev*H06*Flip; 
+  Eigen::MatrixXf T1(4,4), T2(4,4); Eigen::Matrix3f B,R;
+  T1 << 0.0, -1.0, 0.0, 0.0,
+    0.0, 0.0, -1.0, 0.0,
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 1.0;
+  T2 << 0.0, 0.0, 1.0, 0.0,
+    -1.0, 0.0, 0.0, 0.0,
+    0.0, -1.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 1.0;
+  
+  //H06 = Rev*H06;
   Eigen::Matrix4f H_temp;
   for (int i = 0; i < 6; i++) {
-    H_temp = Rev*H;
-    // J.block<3,1>(0,i) = skew3(H_temp.block<3,1>(0,2))*(H06.block<3,1>(0,3) - H_temp.block<3,1>(0,3));
-    //J.block<3,1>(3,i) = H_temp.block<3,1>(0,2);
-    J.block<3,1>(0,i) = skew3(H.block<3,1>(0,2))*(H06.block<3,1>(0,3) - H.block<3,1>(0,3));
-    J.block<3,1>(3,i) = H.block<3,1>(0,2);
-    H = H*UR5::dhf(UR5::alpha[i], UR5::a[i], UR5::d[i], q_temp[i]);
+    H_temp = H;//Rev*H;
+    J.block<3,1>(0,i) = -skew3(H_temp.block<3,1>(0,2))*(H06.block<3,1>(0,3) - H_temp.block<3,1>(0,3));
+    J.block<3,1>(3,i) = H_temp.block<3,1>(0,2);
+    H = H*UR5::dhf(UR5::alpha[i], UR5::a[i], UR5::d[i], q[i]);
   }
-
-  //Need to implement a decomposition
+  double c1 = cos(q[0]); double s1 = sin(q[0]); double c2 = cos(q[1]); double s2 = sin(q[1]);double c5 = cos(q[4]); 
+  double s5 = sin(q[4]); double c6 = cos(q[5]); double s6 = sin(q[5]);
+  double s23 = sin(q[1]+q[2]); double c23 = cos(q[1]+q[2]); double s234 = sin(q[1]+q[2]+q[3]);  double c234 = cos(q[1]+q[2]+q[3]); 
+  //Fixed-Frame Vels
+  double r11 = 0;
+  double r12 = -s1;
+  double  r13 = -s1;
+  double  r14 = -s1;
+  double  r15 = -c1*s234;
+  double  r16 = (c1*c234*s5 - s1*c5);
+  double  r21 = 0;
+  double  r22 = c1;
+  double  r23 = c1;
+  double r24 = c1;
+  double r25 = -s1*s234;
+  double r26 = (c1*c5 + s1*c234*s5);
+  double r31 = 1;
+  double r32 = 0;
+  double r33 = 0; 
+  double r34 = 0;
+  double r35 = -c234;
+  double r36 = -s234*s5;
   
-  Eigen::FullPivLU<Eigen::MatrixXf> lu;
-  lu.setThreshold(1e-7);
-  lu.compute(J);
- 
+  double t11 = ((1893*s1*s234)/20 - (823*c1*c5)/10 - 425*s1*c2 - (2183*c1)/20 - (1569*s1*c23)/4 - (823*s1*c234*s5)/10)/1000;
+  double t12 = -(c1*(1893*c234 + 7845*s23 + 8500*s2 + 1646*s234*s5))/20000;
+  double t13 = -(c1*(1893*c234 + 7845*s23 + 1646*s234*s5))/20000;
+  double t14 = -(c1*(1893*c234 + 1646*s234*s5))/20000;
+  double t15 = ((823*s1*s5)/10 + (823*c1*c234*c5)/10)/1000; 
+  double t16 = 0;
+  double t21 = (425*c1*c2 - (2183*s1)/20 - (823*s1*c5)/10 - (1893*c1*s234)/20 + (1569*c1*c23)/4 + (823*c1*c234*s5)/10)/1000;
+  double t22 = -(s1*(1893*c234 + 7845*s23 + 8500*s2 + 1646*s234*s5))/20000;
+  double t23 = -(s1*(1893*c234 + 7845*s23 + 1646*s234*s5))/20000;
+  double t24 = -(s1*(1893*c234 + 1646*s234*s5))/20000;
+  double t25 = ((823*s1*c234*c5)/10 - (823*c1*s5)/10)/1000; 
+  double t26 = 0;
+  double t31 = 0;
+  double t32 = (1893*s234)/20000 - (1569*c23)/4000 - (425*c2)/1000 - (823*c234*s5)/10000;
+  double t33 = (1893*s234)/20000 - (1569*c23)/4000 - (823*c234*s5)/10000;
+  double t34 = (1893*s234)/20000 - (823*c234*s5)/10000;
+  double t35 =  -(823*s234*c5)/10000;
+  double t36 = 0;
 
+  //Eigen::MatrixXf J_R(6,6);
+  /* J << t11, t12, t13, t14, t15, t16,
+    t21, t22, t23, t24, t25, t26,
+    t31, t32, t33, t34, t35, t36,
+    r11, r12, r13, r14, r15, r16,
+    r21, r22, r23, r24, r25, r26,
+    r31, r32, r33, r34, r35, r36;
+  */
+  //J1.block<6,6>(0,0) = J_R;
+
+  /*
+  std::cout << "J" << J << std::endl;
+  std::cout << "    " << std::endl;
+  std::cout << "J1" << J1 << std::endl;
+  std::cout << "    " << std::endl;
+  */
+  
   //Check to see if invJacobian is near singular
-  if (!lu.isInvertible()) {
+  if (fabs(J.determinant()) < 10e-9) {
     std::cout << "Jacobian is near singular." << std::endl;
     J += Eigen::MatrixXf::Identity(6,6)*0.0001;
-    lu.compute(J);
   }
  
-  lu.inverse();
-  J = lu.matrixLU();
-  return J;
+  return J.inverse();
+
+}
+
+
+Eigen::VectorXf lieAlgebra(Eigen::MatrixXf pose) {
+  
+  Eigen::MatrixXf T1(4,4), T2(4,4); Eigen::Matrix3f B,R;
+  T1 << 0.0, -1.0, 0.0, 0.0,
+    0.0, 0.0, -1.0, 0.0,
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 1.0;
+  T2 << 0.0, 0.0, 1.0, 0.0,
+    -1.0, 0.0, 0.0, 0.0,
+    0.0, -1.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 1.0;
+  pose = T1*pose*T2;
+  Eigen::Vector3f omega, v;
+  Eigen::VectorXf si(6);
+  R = pose.block<3,3>(0,0);
+  double theta = acos((R.trace()-1)/2);
+  if (theta > 10e-5) {
+    omega(0) = (1/sin(theta))*(R(2,1) - R(1,2));
+    omega(1) = (1/sin(theta))*(R(0,2) - R(2,0));
+    omega(2) = (1/sin(theta))*(R(1,0) - R(0,1));
+  }
+  else {
+    omega(0) = 0;
+    omega(1) = 0;
+    omega(2) = 0;
+  }
+  Eigen::MatrixXf wl = R.log();
+  Eigen::Vector3f w, wtemp;
+  w << wl(2,1), 
+    wl(0,2),
+    wl(1,0);
+  //B = (Eigen::Matrix3f::Identity(3,3) - R)*skew3(w) + w*w.transpose()*theta; 
+  //fabs(theta) <= 10e-3 ? v = pose.block<3,1>(0,3) : v = B.fullPivLu().solve(pose.block<3,1>(0,3));
+  v = pose.block<3,1>(0,3);
+  //v(1)=-v(1);
+  //v(2) = -v(2);
+  //v(0) = -v(0);
+  si.head(3) = v;
+  //wtemp = w;
+
+  //w(2) = -w(2);
+  // w(0) = -wtemp(1);
+  //w(1) = -wtemp(0);
+  si.tail(3) = w;//omega;
+
+  return si;
+
+
 
 }
 
@@ -194,6 +311,7 @@ int main( int argc, char** argv ){
     //Object to publish desired joint positions of the robot
     // sensor_msgs::JointState jointstate;
     sensor_msgs::JointState des_jointstate;
+    // sensor_msgs::JointState joint_temp;
 
 
     // To listen to the current position and orientation of the robot
@@ -282,75 +400,75 @@ int main( int argc, char** argv ){
             Eigen::Matrix4d H_M = H0_6d.matrix();
 	    Eigen::MatrixXf H_6 = H_M.cast <float> ();
 
-	    //Create rotation matrix for comparison with current pose	   
-	    Eigen::MatrixXf H_rot = H_6;
-	    //Rotation Matrix tranpose for inverse
-	    rot << H_rot(0,0), H_rot(1,0), H_rot(2,0),
-	      H_rot(0,1), H_rot(1,1), H_rot(2,1),
-	      H_rot(0,2), H_rot(1,2), H_rot(2,2);
-	   
-	    //Transform the pose into raw D-H parameters to generate the proper
-	    //inverse kinematic (IK) solutions
-	    Eigen::Matrix4f T_0;
-	    T_0 << -1.0, 0.0, 0.0, 0.0,
-	      0.0, -1.0, 0.0, 0.0,
-	      0.0, 0.0, 1.0, 0.0, 
-	      0.0, 0.0, 0.0, 1.0;
-	    Eigen::Matrix4f T_f;
-	    T_f << 0.0, 0.0, 1.0, 0.0,
-	      -1.0, 0.0, 0.0, 0.0,
-	      0.0, -1.0, 0.0, 0.0, 
-	      0.0, 0.0, 0.0, 1.0;
-	    H_6 = T_0*H_6*T_f;
-
-	    //Create memory for IK solutions
-	    double* q_sol[8];
-	    for (int i = 0; i < 8; ++i) {
-	      q_sol[i] = new double[6];
-	    }
-	    //Solve IK
-	    int num_sol = inverse(H_6, q_sol);
-	    
-	    //Ensure the pose is reachable
-	    if (num_sol == 0) {
-	      ROS_WARN("Desired pose is not reachable, choice ignored");
-	      des_jointstate = jointstate_init;
-	      continue;
-	    }
-	    //Compare the solutions to determine which requires the least amount of joint movement
-	    std::vector<double> ang_dist;
-	    double dists = 0;
-	    for (int i = 0; i < num_sol; i++) {	      
-	      for (int j = 0; j < 6; j++) {
-		//add weight to first 3 joints?
-		if (j == 0 || j == 1 || j == 2) {
-		  dists += (jointstate_init.position[j] - q_sol[i][j])*(jointstate_init.position[j] - q_sol[i][j]);
-		}
-		else {
-		  dists += (jointstate_init.position[j] - q_sol[i][j])*(jointstate_init.position[j] - q_sol[i][j]);
-		}		
-	      }
-	      ang_dist.push_back(sqrt(dists));
-	      dists = 0;
-	    }
-
-	    //Return the iterator value for the smallest angular difference
-	    int angs = std::distance(ang_dist.begin(),std::min_element(ang_dist.begin(), ang_dist.end()));
-	    //std::vector<float> signed_diff;
-	    double signed_diff;
-	    //Update the joint positions
-            for (int i = 0; i < 6; ++i)
-            {	        
-	      des_jointstate.position[i] = q_sol[angs][i];
-	      diff(i) = des_jointstate.position[i] - jointstate_init.position[i];
-	      // signed_diff.push_back(fabs(diff(i)));	 
-	      signed_diff += diff(i)*diff(i);     
-	    }	   
-	    //diff /= *std::max_element(signed_diff.begin(),signed_diff.end())*200;
-	    diff /= sqrt(signed_diff)*100;
 	    //Default to jointspace method
 	    if ( ros::param::get("solver_method", solver) ) {   }
-	    else { ros::param::set("solver_method", true);  }
+	    else { ros::param::set("solver_method", true);
+	      solver = true;  }
+
+	    if (solver) {
+	      //Transform the pose into raw D-H parameters to generate the proper
+	      //inverse kinematic (IK) solutions
+	      Eigen::Matrix4f T_0,T_f;
+	      T_0 << -1.0, 0.0, 0.0, 0.0,
+		0.0, -1.0, 0.0, 0.0,
+		0.0, 0.0, 1.0, 0.0, 
+		0.0, 0.0, 0.0, 1.0;
+	  
+	      T_f << 0.0, 0.0, 1.0, 0.0,
+		-1.0, 0.0, 0.0, 0.0,
+		0.0, -1.0, 0.0, 0.0, 
+		0.0, 0.0, 0.0, 1.0;
+	     
+	      H_6 = T_0*H_6*T_f;
+
+	      //Create memory for IK solutions
+	      double* q_sol[8];
+	      for (int i = 0; i < 8; ++i) {
+		q_sol[i] = new double[6];
+	      }
+	      //Solve IK
+	      int num_sol = inverse(H_6, q_sol);
+	  	   	    
+	      //Ensure the pose is reachable
+	      if (num_sol == 0) {
+		ROS_WARN("Desired pose is not reachable, choice ignored");
+		des_jointstate = jointstate_init;
+		continue;
+	      }
+
+	      //Compare the solutions to determine which requires the least amount of joint movement
+	      std::vector<double> ang_dist;
+	      double dists = 0;
+	      for (int i = 0; i < num_sol; i++) {	      
+		for (int j = 0; j < 6; j++) {
+		  //add weight to first 3 joints?
+		  if (j == 0 || j == 1 || j == 2) {
+		    dists += (jointstate_init.position[j] - q_sol[i][j])*(jointstate_init.position[j] - q_sol[i][j]);
+		  }
+		  else {
+		    dists += (jointstate_init.position[j] - q_sol[i][j])*(jointstate_init.position[j] - q_sol[i][j]);
+		  }		
+		}
+		ang_dist.push_back(sqrt(dists));
+		dists = 0;
+	      }
+
+	      //Return the iterator value for the smallest angular difference
+	      int angs = std::distance(ang_dist.begin(),std::min_element(ang_dist.begin(), ang_dist.end()));
+	      //std::vector<float> signed_diff;
+	      double signed_diff;
+	      //Update the joint positions
+	      for (int i = 0; i < 6; ++i)
+		{	        
+		  des_jointstate.position[i] = q_sol[angs][i];
+		  diff(i) = des_jointstate.position[i] - jointstate_init.position[i];
+		  if (fabs(diff(i)) > PI) diff(i) < 0 ? diff(i) += 2*PI: diff(i) -= 2*PI;
+		  // signed_diff.push_back(fabs(diff(i)));	 
+		  signed_diff += diff(i)*diff(i);     
+		}	   
+	      //diff /= *std::max_element(signed_diff.begin(),signed_diff.end())*200;
+	       diff /= sqrt(signed_diff)*100;
+	    }
 
 	    //After pose is updated, change the initial position to current position
 	    moving = true;
@@ -364,14 +482,28 @@ int main( int argc, char** argv ){
 
             joint_trajectory.points.push_back( point );
             joint_trajectory.joint_names = jointstate_init.name;
-
-	    // ROS_INFO_STREAM("joints" << jointstate_init.position[0] << "   " <<  jointstate_init.position[1] <<"   " << jointstate_init.position[2] <<"   " << jointstate_init.position[3] <<"   " <<jointstate_init.position[4] <<"   " << jointstate_init.position[5]);
-   
+ 
 	}
 	//Iterate over trajectory to generate motion
 	else if (moving) {
 	  sensor_msgs::JointState jointstate;
 	  jointstate = jointstate_init;
+	  
+	  Eigen::VectorXf evel(6); double scale;
+	  Eigen::Affine3d H_Cpd, H_Spd;
+          tf::poseTFToEigen( setpose, H_Spd);
+	  tf::poseTFToEigen( current_pose, H_Cpd);
+          Eigen::Matrix4d H_Sp = H_Spd.matrix();
+	  Eigen::Matrix4d H_Cp = H_Cpd.matrix();
+	  Eigen::MatrixXf Sp = H_Sp.cast <float> ();
+	  Eigen::MatrixXf Cp = H_Cp.cast <float> ();
+	  Eigen::MatrixXf g_error, temp;
+	  temp = Cp;
+	  Cp.block<3,3>(0,0) = temp.block<3,3>(0,0).transpose();
+	  Cp.block<3,1>(0,3) = -Cp.block<3,3>(0,0)*temp.block<3,1>(0,3);
+	  g_error = Cp*Sp;
+	  evel = lieAlgebra(g_error);	 
+
 	  //If true use jointspace angle incrementing, if false use Jacobian based methods
 	  if (solver) {
 	    for (int i = 0; i < 6; i++) {
@@ -382,39 +514,15 @@ int main( int argc, char** argv ){
 	  else { 
 	    // Compute the Jacobian
 	    Eigen::MatrixXf Ji = invJacobian(jointstate);
-	  
- 	    tf::Point error = setpose.getOrigin() - current_pose.getOrigin();
-	    double roll_setpose, roll_current_pose, pitch_current_pose, pitch_setpose, yaw_current_pose, yaw_setpose;
-	    tf::Matrix3x3(setpose.getRotation()).getRPY(roll_setpose, pitch_setpose, yaw_setpose);
-	    tf::Matrix3x3(current_pose.getRotation()).getRPY(roll_current_pose, pitch_current_pose, yaw_current_pose);
-	    tf::Point rot_error;
-	    rot_error.setX(roll_setpose - roll_current_pose);
-	    rot_error.setY(pitch_setpose - pitch_current_pose);
-	    rot_error.setZ(yaw_setpose - yaw_current_pose);
-	    tf::Point v = ( error / error.length() ) * positionincrement;
-	    tf::Point w = ( rot_error / rot_error.length() ) * positionincrement;
-	    //add rotational velocity?
-           
-         
-
-   
-           // This is the inverse kinematics realization for the translation
-            //   of UR5 by incrementing the joint postions
-
-	     // Compute the joint velocity by multiplying the (Ji v)
+	    Eigen::VectorXf evt(6);
+	    // Compute the joint velocity by multiplying Ji by v
 	    Eigen::VectorXf qd(6);
-	    Eigen::VectorXf vel(6);
-	    vel << v[0], v[1], v[2], 0, 0, 0;//w[0], w[1], w[2];
-	    qd = Ji*vel;
-	      /*qd[0] = Ji[0][0]*v[0] + Ji[0][1]*v[1] + Ji[0][2]*v[2];
-            qd[1] = Ji[1][0]*v[0] + Ji[1][1]*v[1] + Ji[1][2]*v[2];
-            qd[2] = Ji[2][0]*v[0] + Ji[2][1]*v[1] + Ji[2][2]*v[2];*/
-
-            // increment the joint positions
-            for (int j = 0; j < 3; j++) {
+  	    //evel = (evel/(1+evel.norm()))*positionincrement; 
+	    evt = (evel/evel.norm())*positionincrement*0.05;
+	    qd = Ji*evt;
+	    for (int j = 0; j < 6; j++) {
 	      jointstate.position[j] += qd(j);
-	    }
- 
+	    } 
 	    
 	  }
 
@@ -424,21 +532,10 @@ int main( int argc, char** argv ){
 	  point.time_from_start = time_from_start; 
 	  time_from_start = time_from_start + ros::Duration( period );
  	  joint_trajectory.points.push_back( point ); 
-
-	  //If we reach desired pose, stop and wait for new pose
-	  tf::Point pos_error = current_pose.getOrigin() - setpose.getOrigin();
-	  Eigen::Affine3d H0_6r;
-          tf::poseTFToEigen( current_pose, H0_6r);
-          Eigen::Matrix4d H_R = H0_6r.matrix();
-	  Eigen::MatrixXf H_cur_rot = H_R.cast <float> ();
-	  Eigen::Matrix3f cur_rot;
-	  cur_rot << H_cur_rot(0,0), H_cur_rot(0,1), H_cur_rot(0,2), 
-	    H_cur_rot(1,0), H_cur_rot(1,1), H_cur_rot(1,2), 
-	    H_cur_rot(2,0), H_cur_rot(2,1), H_cur_rot(2,2);
-	  Eigen::Matrix3f rot_id;
-	  rot_id = rot*cur_rot;
-	  float trans_rot_error = sqrt( (rot_id(0,0) - 1)*(rot_id(0,0) - 1) + (rot_id(1,1) - 1)*(rot_id(1,1) - 1) + (rot_id(2,2) - 1)*(rot_id(2,2) - 1) );
-	  if (pos_error.length() < 0.1) {//(pos_error.length() < 0.01 && trans_rot_error < 0.1) { // 0.001 && rot_error < 0.05) {
+	 
+	  !solver ? scale = 1 : scale = 0.5;
+	  std::cout << evel.norm() << std::endl;
+	  if (evel.norm() <= positionincrement*scale) {	 
 	    moving = false;
 	    if (solver) {
 	      point.positions = des_jointstate.position;
