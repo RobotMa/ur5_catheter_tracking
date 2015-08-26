@@ -26,25 +26,12 @@
 
 
 #define PI 3.1415926
-/*
-//An array of the six alpha D-H parameters for the UR5
-double UR5::alpha[] = {PI/2,0,0,PI/2,-PI/2,0};
-//An array of the six a D-H parameters for the UR5
-double UR5::a[] = {0,-0.425,-0.39225,0,0,0};
-//An array of the six d D-H parameters for the UR5
-double UR5::d[] = {0.089159,0,0,0.10915,0.09465,0.0823};
-double UR5::off[] = {0,-PI/2,0,0,-PI/2,0};
-*/
 
 //**TO-DO**
-//[1] - Implement a check to avoid moving through or close to singularities
+//[1] - Implement a check to avoid moving through or close to singularities (may not be necessary)
+//[2] - Self Collision Avoidance (easily implementable with a switch to moveit!
 //***************************************************************
 
-// global list to hold the setposes. Not very thread safe but it's fine.
-// **In ROS, Pose is a data structure composed of Point position and Quaternion
-// orientation.
-// Whehther list can acccept the Pose data structure is to be tested
-// The answer seems to be : NO.
 // Define lists for translation and rotation separately
 std::list< geometry_msgs::Point > pointlist;
 std::list< geometry_msgs::Quaternion > quaternionlist;
@@ -66,24 +53,17 @@ Eigen::MatrixXf invJacobian( const sensor_msgs::JointState& jointstate) {
       0.0, -1.0, 0.0, 0.0,
       0.0, 0.0, 1.0, 0.0, 
       0.0, 0.0, 0.0, 1.0;
-  Eigen::MatrixXf T1(4,4), T2(4,4); Eigen::Matrix3f B,R;
-  T1 << 0.0, -1.0, 0.0, 0.0,
-    0.0, 0.0, -1.0, 0.0,
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 1.0;
-  T2 << 0.0, 0.0, 1.0, 0.0,
-    -1.0, 0.0, 0.0, 0.0,
-    0.0, -1.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 1.0;
-  
-  //H06 = Rev*H06;
+
+  H06 = Rev*H06;
   Eigen::Matrix4f H_temp;
   for (int i = 0; i < 6; i++) {
-    H_temp = H;//Rev*H;
-    J.block<3,1>(0,i) = -skew3(H_temp.block<3,1>(0,2))*(H06.block<3,1>(0,3) - H_temp.block<3,1>(0,3));
+    H_temp = Rev*H;
+    J.block<3,1>(0,i) = skew3(H_temp.block<3,1>(0,2))*(H06.block<3,1>(0,3) - H_temp.block<3,1>(0,3));
     J.block<3,1>(3,i) = H_temp.block<3,1>(0,2);
     H = H*UR5::dhf(UR5::alpha[i], UR5::a[i], UR5::d[i], q[i]);
   }
+
+  /*
   double c1 = cos(q[0]); double s1 = sin(q[0]); double c2 = cos(q[1]); double s2 = sin(q[1]);double c5 = cos(q[4]); 
   double s5 = sin(q[4]); double c6 = cos(q[5]); double s6 = sin(q[5]);
   double s23 = sin(q[1]+q[2]); double c23 = cos(q[1]+q[2]); double s234 = sin(q[1]+q[2]+q[3]);  double c234 = cos(q[1]+q[2]+q[3]); 
@@ -143,6 +123,7 @@ Eigen::MatrixXf invJacobian( const sensor_msgs::JointState& jointstate) {
   std::cout << "    " << std::endl;
   */
   
+  
   //Check to see if invJacobian is near singular
   if (fabs(J.determinant()) < 10e-9) {
     std::cout << "Jacobian is near singular." << std::endl;
@@ -156,52 +137,20 @@ Eigen::MatrixXf invJacobian( const sensor_msgs::JointState& jointstate) {
 
 Eigen::VectorXf lieAlgebra(Eigen::MatrixXf pose) {
   
-  Eigen::MatrixXf T1(4,4), T2(4,4); Eigen::Matrix3f B,R;
-  T1 << 0.0, -1.0, 0.0, 0.0,
-    0.0, 0.0, -1.0, 0.0,
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 1.0;
-  T2 << 0.0, 0.0, 1.0, 0.0,
-    -1.0, 0.0, 0.0, 0.0,
-    0.0, -1.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 1.0;
-  pose = T1*pose*T2;
+  Eigen::Matrix3f R;
   Eigen::Vector3f omega, v;
   Eigen::VectorXf si(6);
   R = pose.block<3,3>(0,0);
-  double theta = acos((R.trace()-1)/2);
-  if (theta > 10e-5) {
-    omega(0) = (1/sin(theta))*(R(2,1) - R(1,2));
-    omega(1) = (1/sin(theta))*(R(0,2) - R(2,0));
-    omega(2) = (1/sin(theta))*(R(1,0) - R(0,1));
-  }
-  else {
-    omega(0) = 0;
-    omega(1) = 0;
-    omega(2) = 0;
-  }
   Eigen::MatrixXf wl = R.log();
-  Eigen::Vector3f w, wtemp;
+  Eigen::Vector3f w;
   w << wl(2,1), 
     wl(0,2),
     wl(1,0);
-  //B = (Eigen::Matrix3f::Identity(3,3) - R)*skew3(w) + w*w.transpose()*theta; 
-  //fabs(theta) <= 10e-3 ? v = pose.block<3,1>(0,3) : v = B.fullPivLu().solve(pose.block<3,1>(0,3));
   v = pose.block<3,1>(0,3);
-  //v(1)=-v(1);
-  //v(2) = -v(2);
-  //v(0) = -v(0);
   si.head(3) = v;
-  //wtemp = w;
-
-  //w(2) = -w(2);
-  // w(0) = -wtemp(1);
-  //w(1) = -wtemp(0);
-  si.tail(3) = w;//omega;
+  si.tail(3) = w;
 
   return si;
-
-
 
 }
 
@@ -498,9 +447,9 @@ int main( int argc, char** argv ){
 	  Eigen::MatrixXf Sp = H_Sp.cast <float> ();
 	  Eigen::MatrixXf Cp = H_Cp.cast <float> ();
 	  Eigen::MatrixXf g_error, temp;
-	  temp = Cp;
-	  Cp.block<3,3>(0,0) = temp.block<3,3>(0,0).transpose();
-	  Cp.block<3,1>(0,3) = -Cp.block<3,3>(0,0)*temp.block<3,1>(0,3);
+	  temp = Sp;
+	  Sp.block<3,3>(0,0) = temp.block<3,3>(0,0).transpose();
+	  Sp.block<3,1>(0,3) = -Sp.block<3,3>(0,0)*temp.block<3,1>(0,3);
 	  g_error = Cp*Sp;
 	  evel = lieAlgebra(g_error);	 
 
@@ -521,7 +470,7 @@ int main( int argc, char** argv ){
 	    evt = (evel/evel.norm())*positionincrement*0.05;
 	    qd = Ji*evt;
 	    for (int j = 0; j < 6; j++) {
-	      jointstate.position[j] += qd(j);
+	      jointstate.position[j] -= qd(j);
 	    } 
 	    
 	  }
