@@ -1,9 +1,6 @@
 #include <ros/ros.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
-//#include <eigen-eigen-bdd17ee3b1b3/Eigen/Dense>
-//#include <eigen-eigen-bdd17ee3b1b3/Eigen/Core>
-//#include <eigen-eigen-bdd17ee3b1b3/unsupported/Eigen/MatrixFunctions>
 #include <unsupported/Eigen/MatrixFunctions>
 
 #include <vector>
@@ -30,6 +27,7 @@
 //**TO-DO**
 //[1] - Implement a check to avoid moving through or close to singularities (may not be necessary)
 //[2] - Self Collision Avoidance (easily implementable with a switch to moveit!
+//[3] - Add joint limit checks
 //***************************************************************
 
 // Define lists for translation and rotation separately
@@ -279,7 +277,7 @@ int main( int argc, char** argv ){
     tf::Pose setpose;                               // the destination setpose
     Eigen::VectorXf diff(6);
     Eigen::Matrix3f rot;
-    bool solver;
+    bool solver, robot_mover;
     // This is the main trajectory loop
     // At each iteration it computes and publishes a new joint positions that
     // animate the motion of the robot
@@ -349,10 +347,17 @@ int main( int argc, char** argv ){
             Eigen::Matrix4d H_M = H0_6d.matrix();
 	    Eigen::MatrixXf H_6 = H_M.cast <float> ();
 
-	    //Default to jointspace method
+	    //Check solver method (default to Jacobian method)
 	    if ( ros::param::get("solver_method", solver) ) {   }
-	    else { ros::param::set("solver_method", true);
-	      solver = true;  }
+	    else { ros::param::set("solver_method", false);
+	      solver = false;  }
+
+	    //Check simulation or robot motion (default robot motion)
+	    if ( ros::param::get("robot_move", robot_mover) ) {   }
+	    else { ros::param::set("robot_move", true);
+	      robot_mover = true;  }
+
+
 
 	    if (solver) {
 	      //Transform the pose into raw D-H parameters to generate the proper
@@ -481,8 +486,15 @@ int main( int argc, char** argv ){
 	  point.time_from_start = time_from_start; 
 	  time_from_start = time_from_start + ros::Duration( period );
  	  joint_trajectory.points.push_back( point ); 
-	 
-	  !solver ? scale = 1 : scale = 0.5;
+
+	  //Set robot to move
+	  if (robot_mover) {
+	    std_msgs::BoolPtr firstMove_end(new std_msgs::Bool);
+	    firstMove_end->data = true;
+	    spoof_first_move.publish(firstMove_end);
+	  }
+
+	  !solver ? scale = 0.2 : scale = 0.5;
 	  std::cout << evel.norm() << std::endl;
 	  if (evel.norm() <= positionincrement*scale) {	 
 	    moving = false;
