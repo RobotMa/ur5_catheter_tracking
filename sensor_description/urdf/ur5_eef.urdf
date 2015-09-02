@@ -218,7 +218,8 @@
   <joint name="ee_fixed_joint" type="fixed">
     <parent link="wrist_3_link"/>
     <child link="ee_link"/>
-    <origin rpy="0.0 0.0 1.570796325" xyz="0.0 0.0823 0.0"/>
+    <!--origin rpy="0.0 0.0 1.570796325" xyz="0.0 0.0823 0.0"/-->
+    <origin rpy="-1.570796325 0.0 1.570796325" xyz="0.0 0.0823 0.0"/>
   </joint>
   <link name="ee_link">
     <collision>
@@ -231,13 +232,14 @@
   <link name="ultrasound_sensor">
     <inertial>
       <!-- <origin
-        xyz="-0.002645 -0.076576 0.000120270000000005"
+        xyz="0.0 0.0 0.0"
         rpy="0 0 0" /> -->
       <mass value="0.27748"/>
       <inertia ixx="0.000772393706918962" ixy="3.62561532781402E-07" ixz="-8.97669927346242E-06" iyy="-5.67458125370052E-06" iyz="-9.70334791219381E-05" izz="5.67458125370057E-06"/>
     </inertial>
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Reajust the position of the ultrasound_sensor frame -->
+      <origin rpy="0 0 0" xyz="0 0 0.037"/>
       <geometry>
         <mesh filename="package://sensor_description/meshes/Ultra_Sensor.STL"/>
       </geometry>
@@ -257,7 +259,8 @@
     <child link="ultrasound_sensor"/>
     
     <!-- x is obtained by trial and error in rviz via naked eye checking -->
-    <origin rpy="0.0 -1.57 0.0" xyz="0.14751 0.0 0.0"/>
+    <!-- origin rpy="0.0 -1.57 0.0" xyz="0.14751 0.0 0.0"/-->
+    <origin rpy="0.0 -1.57 0.0" xyz="0.184751 0.0 0.0"/>
   </joint>
   <transmission name="shoulder_pan_trans">
     <type>transmission_interface/SimpleTransmission</type>

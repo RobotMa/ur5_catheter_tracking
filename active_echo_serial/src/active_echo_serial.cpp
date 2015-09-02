@@ -4,6 +4,9 @@
 // Include custom message
 #include <active_echo_serial/Num.h>
 
+// For clean serial port close
+#include <signal.h>
+
 // Serial includes
 #include <stdio.h>   /* Standard input/output definitions */
 #include <string.h>  /* String function definitions */
@@ -14,6 +17,10 @@
 #include <sys/ioctl.h>
 #include <iostream>
 #include <stdlib.h>  /* atoi */
+
+
+// For clean serial port close
+int fd = 0;
 
 int open_port(std::string& port)
 {   
@@ -182,6 +189,14 @@ void close_port(int fd)
 {
 	close(fd);
 }
+
+void mySigintHandler(int sig)
+{
+	close_port( fd );
+	ros::shutdown();
+}
+
+
 int main(int argc, char **argv)
 {
 	// Open the serial port (This should be serial port for the active echo microcontroller)
@@ -192,6 +207,19 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::Publisher n_pub = n.advertise<active_echo_serial::Num>("active_echo_data", 20);
 
+	// Keep checking the existence of serial port 
+	int fd = open_port(portname);
+
+	std::cout << fd << std::endl;
+
+	int res;
+
+	// Set the buad rate, data bits and stop bit
+	setup_port(fd, 921600, 8, 1, false, false);
+	
+	// Lower loop rate will render the size of buf to be 255
+	// Higher loop rate is desired/required 
+	// Current tested safe threshold is 50 or above
 	ros::Rate loop_rate(50);
 
 	// Define the names of the four output integers
@@ -202,23 +230,16 @@ int main(int argc, char **argv)
 
 	while(ros::ok())
 	{
-		// Keep checking the existence of serial port 
-		int fd = open_port(portname);
-
-		std::cout << fd << std::endl;
-
-		int res;
-
-		// Set the buad rate, data bits and stop bit
-		setup_port(fd, 921600, 8, 1, false, false);
-
 
 		if ( fd!=-1 )
 		{
+			
+			// For clean serial port close	
+			signal(SIGINT, mySigintHandler);
 			/* 
 			   Publish to active_echo_serial/Num Rostopic if serial communication
 			   is established
-			 */
+			   */
 
 			char buf[255];
 			// Initialize buf
@@ -235,22 +256,24 @@ int main(int argc, char **argv)
 			// Convert char buf to string full_info
 			std::string full_info(buf);
 
+			std::cout << full_info.length() << std::endl;
+
 			// Initialize active echo ROS msg
 			active_echo_serial::Num msg;
 
 			// Parse the string into four variables once the serial
 			// port is able to get a string with full length (46)
-			if (full_info.length() == 46)
+			if (full_info.length()%46 == 0 && full_info.length() > 0)
 			{
 				// std::cout << full_info.at(4) << std::endl;
 				std::string l_all = full_info.substr(6,6);
 				std::string  l_ta = full_info.substr(18,6);
 				std::string   dly = full_info.substr(29,6);
 				std::string    tc = full_info.substr(39,6);
-				std::cout << l_all << std::endl;
-				std::cout <<  l_ta << std::endl;
-				std::cout <<   dly << std::endl;
-				std::cout <<    tc << std::endl;
+				// std::cout << l_all << std::endl;
+				// std::cout <<  l_ta << std::endl;
+				// std::cout <<   dly << std::endl;
+				// std::cout <<    tc << std::endl;
 
 				std::string::size_type sz; // alias of size_t
 
@@ -264,16 +287,20 @@ int main(int argc, char **argv)
 				msg.l_ta  = l_ta_v;
 				msg.dly   = dly_v;
 				msg.tc    = tc_v;
-				std::cout << l_all_v << " " << dly_v <<std::endl;
-
+				// std::cout << l_all_v << " " << dly_v <<std::endl;
+				
+				// Only publish when tc_v is not equal to zeros
+				// This is condition of successfull point detection
+				if (tc_v == 0){ ROS_INFO("Can't detect point"); }
+				else{ n_pub.publish(msg); }
 
 			}
 
-			n_pub.publish(msg);
+			
 		}
 		else { std::cout << "No active echo serial port detected." << std::endl; }
 		loop_rate.sleep();
 	}
 
-return 0;
+	return 0;
 }

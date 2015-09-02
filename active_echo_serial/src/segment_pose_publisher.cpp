@@ -29,8 +29,10 @@ int main(int argc, char **argv)
 
 	ros::Publisher pub_pose = n.advertise<geometry_msgs::Pose>( "setpose", 1);
 
-	tf::TransformListener listener_1;
-	tf::TransformListener listener_2; // Add a 2nd transform listener trying to fix messed up tf
+	tf::TransformListener listener_1; // /ee_link w.r.t. /ultrasound_sensor
+	tf::TransformListener listener_2; // /segment_point w.r.t. /base_link
+        tf::TransformListener listener_3; // /ee_link w.r.t. /base_link
+        
 
 	// Dynamic reconfigure callback 
 	dynamic_reconfigure::Server<dynamic_reconfig::ultrasound_ur5Config> server;
@@ -46,6 +48,7 @@ int main(int argc, char **argv)
 
 
 		tf::Transform transform_be;
+		tf::StampedTransform transform_be_old; // Current transformation between /ee_link and /base_link
 		tf::StampedTransform transform_ue;
 		tf::StampedTransform transform_bs;
 
@@ -61,7 +64,7 @@ int main(int argc, char **argv)
 			std::string tgs_frame( "segment_point" );
 			std::string tgu_frame( "ultrasound_sensor" );
 
-			listener_1.waitForTransform( tge_frame, tgu_frame, ros::Time(0), ros::Duration(0.8) );
+			listener_1.waitForTransform( tgu_frame, tge_frame, ros::Time(0), ros::Duration(0.8) );
 			listener_1.lookupTransform( tgu_frame, tge_frame, ros::Time(0), transform_ue );
 
 			// debug nan x, y, z of des_pose
@@ -80,6 +83,10 @@ int main(int argc, char **argv)
 			// Calculate the new pose for the end-effector
 			transform_be.mult(transform_bs, transform_ue);
 
+			listener_3.waitForTransform( ref_frame, tge_frame, ros::Time(0), ros::Duration(0.8)  );
+			listener_3.lookupTransform( ref_frame, tge_frame, ros::Time(0), transform_be_old );
+
+
 		}
 		catch(tf::TransformException ex)
 		{ std::cout << ex.what() << std::endl; 
@@ -91,10 +98,13 @@ int main(int argc, char **argv)
 
 			// Convert tf::Transform to geometry_msgs::Pose for publishing
 			geometry_msgs::Pose des_pose;
-
-			des_pose.position.x =  transform_be.getOrigin().x();
-			des_pose.position.y =  transform_be.getOrigin().y();
-			des_pose.position.z =  transform_be.getOrigin().z();
+			
+			des_pose.position.x =  transform_be.getOrigin().x();				des_pose.position.y =  transform_be.getOrigin().y();
+			
+			// Fix the z-axis translation of the end-effector
+			// Set z of the des_pose to the current z of the end-effector
+			// des_pose.position.z =  transform_be.getOrigin().z();
+			des_pose.position.z =  transform_be_old.getOrigin().z();
 
 			des_pose.orientation.x = transform_be.getRotation().x();
 			des_pose.orientation.y = transform_be.getRotation().y();

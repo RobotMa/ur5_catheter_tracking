@@ -8,25 +8,26 @@
 #include <dynamic_reconfigure/server.h> // Dynamic Reconfigure Header File
 #include <dynamic_reconfig/ultrasound_ur5Config.h> // Ultra-UR5 Dynamic Reconfigure Header File
 
+// Some unknown runtime error exists between this node and the ur5.launch in ur5_control
 
 //This node subscribes to the ROS topic /active_echo_data and publishes
 //the coordinate information of the segmented point.
- 
+
 static bool g_mid_plane = true;
 
 void dynamiconfigCallback(dynamic_reconfig::ultrasound_ur5Config &config, uint32_t level)
 {
 	g_mid_plane = config.in_plane_assumption;
 	ROS_INFO("Reconfigure Request: %s",
-		  config.in_plane_assumption?"True":"False");
+			config.in_plane_assumption?"True":"False");
 }
 
 
 void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 {
 	static tf::TransformBroadcaster br;
-	
-	
+
+
 	// Transform to be broadcasted to ultrasound_sensor 
 	tf::Transform transform;
 	tf::Quaternion q;
@@ -60,7 +61,8 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 
 			// Note: This inverse Gaussian solution assumes that the positive solution is taken, which will
 			// result in the robot moving in a single direction 
-			x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000; // m
+			double scale = 5.0;
+			x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
 		}
 		y = ( msg->l_ta - 64.5)*element_w/1000; // Unit:m
 		z = -(msg->dly)*(1/AE_SRate)*SOS; // Unit:m
@@ -69,7 +71,7 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 		if ( !isnan(x) ) {
 
 		}
-		else { throw false; }
+		else { std::cout << "Prepare to throw" << std::endl; throw false; }
 	}
 	catch (bool fail) { 
 		std::cout << "Rostopic /active_echo_data is not published, or tc is nonpositive." << std::endl;
@@ -80,8 +82,8 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 
 		transform.setOrigin( tf::Vector3(x, y, z));
 		q.setRPY(0, 0, 0);
-		transform. setRotation(q);
-
+		transform.setRotation(q);
+                std::cout << "Preparing to broadcast the transform" << std::endl;
 		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),"ultrasound_sensor", "segment_point"));
 
 	}
@@ -105,12 +107,12 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 
 	ros::Subscriber sub = n.subscribe("active_echo_data", 100, segmentCallback);
-	
+
 	dynamic_reconfigure::Server<dynamic_reconfig::ultrasound_ur5Config> server;
 	dynamic_reconfigure::Server<dynamic_reconfig::ultrasound_ur5Config>::CallbackType f;
 
 	f = boost::bind(&dynamiconfigCallback, _1, _2);
-    server.setCallback(f);
+	server.setCallback(f);
 
 	ros::spin();
 
