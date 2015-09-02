@@ -1,22 +1,44 @@
 <launch>
-	<!-- upload urdf -->
-	<include file="$(find sensor_description)/launch/sensor_rviz.launch" />
+	
+<group ns="ur5_1">	
+	<arg name="gui" default="True" />
 
-	<group ns="phantom" >
+	<param name="robot_id" value="0" />
+	<param name="tf_prefix" type="string" value="ur5_1" />
+	
+	<param name="use_gui" value="$(arg gui)"/>
+
+	<param name="robot_description" textfile="$(find sensor_description)/urdf/ur5_eef.urdf" />
+	
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+	
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+</group>
+
+	<node pkg="tf" type="static_transform_publisher" name="world_robot1_base_broadcaster" args="0.5 0 0 0 0 0 /world /ur5_1/world 100" />
+
+<group ns="ur5_2">	
+	<arg name="gui" default="True" />
+
+	<param name="robot_id" value="1" />
+	<param name="tf_prefix" type="string" value="ur5_2" />
+	
+	<param name="use_gui" value="$(arg gui)"/>
+
+	<param name="robot_description" textfile="$(find sensor_description)/urdf/ur5_eef.urdf" />
+	
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+	
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+</group>
+
+	<node pkg="tf" type="static_transform_publisher" name="world_robot2_base_broadcaster" args="0.5 0 0 0 0 0 /world /ur5_2/world 100" />
 
 
-		<arg name="gui" default="True" />
+	<param name="robot_description" textfile="$(find phantom_description)/urdf/phantom.urdf" />
 
-		<param name="robot_id" value="0" />
-		<param name="tf_prefix" type="string" value="robot_0" />
+	<node pkg="tf" type="static_transform_publisher" name="world_phantom_base_broadcaster" args="1 0 0 0 0 0 /world /phantom_base_link 100" />
 
-		<param name="robot_description" textfile="$(find phantom_description)/urdf/phantom.urdf" />
-		<param name="use_gui" value="$(arg gui)" />
-
-		<node pkg="tf" type="static_transform_publisher" name="world_phantom_base_broadcaster" args="0.5 0 0 0 0 0 /world /phantom_base_link 100" />
-
-	</group>
-
-	<!-- node name="rviz" pkg="rviz" type="rviz" args="-d $(find sensor_description)/urdf.rviz" required="true" /-->
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find phantom_description)/phantom_robot.rviz" required="true"/>
 
 </launch>
