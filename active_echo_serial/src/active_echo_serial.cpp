@@ -29,7 +29,8 @@ int open_port(std::string& port)
 	// Open serial port
 	// O_RDWR - Read and write
 	// O_NOCTTY - Ignore special chars like CTRL-C
-	fd = open(port.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+	// fd = open(port.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+	fd = open(port.c_str(), O_RDONLY | O_NOCTTY | O_NDELAY);
 	if (fd == -1)
 	{     
 		/* Could not open the port. */
@@ -250,6 +251,7 @@ int main(int argc, char **argv)
 
 			// Get the serial port signal
 			// res: number of characters received
+			std::cout << "Serial port working before starting to read " << std::endl; 
 			res = read(fd, buf, 255);
 			std::cout << buf << std::endl;
 

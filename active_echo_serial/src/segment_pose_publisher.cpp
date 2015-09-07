@@ -31,8 +31,8 @@ int main(int argc, char **argv)
 
 	tf::TransformListener listener_1; // /ee_link w.r.t. /ultrasound_sensor
 	tf::TransformListener listener_2; // /segment_point w.r.t. /base_link
-        tf::TransformListener listener_3; // /ee_link w.r.t. /base_link
-        
+	tf::TransformListener listener_3; // /ee_link w.r.t. /base_link
+
 
 	// Dynamic reconfigure callback 
 	dynamic_reconfigure::Server<dynamic_reconfig::ultrasound_ur5Config> server;
@@ -68,17 +68,17 @@ int main(int argc, char **argv)
 			listener_1.lookupTransform( tgu_frame, tge_frame, ros::Time(0), transform_ue );
 
 			// debug nan x, y, z of des_pose
-			std::cout << transform_ue.getOrigin().x() << std::endl;
-			std::cout << transform_ue.getOrigin().y() << std::endl;
-			std::cout << transform_ue.getOrigin().z() << std::endl;
+			// std::cout << transform_ue.getOrigin().x() << std::endl;
+			// std::cout << transform_ue.getOrigin().y() << std::endl;
+			// std::cout << transform_ue.getOrigin().z() << std::endl;
 
 			listener_2.waitForTransform( ref_frame, tgs_frame, ros::Time(0), ros::Duration(0.8)  );
 			listener_2.lookupTransform( ref_frame, tgs_frame, ros::Time(0), transform_bs );
 
 			// debug nan x, y, z of des_pose
-			std::cout << transform_bs.getOrigin().x() << std::endl;
-			std::cout << transform_bs.getOrigin().y() << std::endl;	
-			std::cout << transform_bs.getOrigin().z() << std::endl;
+			// std::cout << transform_bs.getOrigin().x() << std::endl;
+			// std::cout << transform_bs.getOrigin().y() << std::endl;	
+			// std::cout << transform_bs.getOrigin().z() << std::endl;
 
 			// Calculate the new pose for the end-effector
 			transform_be.mult(transform_bs, transform_ue);
@@ -86,35 +86,36 @@ int main(int argc, char **argv)
 			listener_3.waitForTransform( ref_frame, tge_frame, ros::Time(0), ros::Duration(0.8)  );
 			listener_3.lookupTransform( ref_frame, tge_frame, ros::Time(0), transform_be_old );
 
+			if (g_track == true) {
+
+				// Convert tf::Transform to geometry_msgs::Pose for publishing
+				geometry_msgs::Pose des_pose;
+
+				des_pose.position.x =  transform_be.getOrigin().x();	
+				des_pose.position.y =  transform_be.getOrigin().y();
+
+				// Fix the z-axis translation of the end-effector
+				// Set z of the des_pose to the current z of the end-effector
+				// des_pose.position.z =  transform_be.getOrigin().z();
+				des_pose.position.z =  transform_be_old.getOrigin().z();
+
+				des_pose.orientation.x = transform_be.getRotation().x();
+				des_pose.orientation.y = transform_be.getRotation().y();
+				des_pose.orientation.z = transform_be.getRotation().z();
+				des_pose.orientation.w = transform_be.getRotation().w();
+
+				std::cout << transform_bs.getOrigin().z() << std::endl;
+				pub_pose.publish( des_pose );			
+			}
+			else { std::cout << "Not able to publish to /setpose" << std::endl; }
+
 
 		}
 		catch(tf::TransformException ex)
 		{ std::cout << ex.what() << std::endl; 
-			g_track = false;	
+			// g_track = false;	
 		}
 
-
-		if (g_track == true) {
-
-			// Convert tf::Transform to geometry_msgs::Pose for publishing
-			geometry_msgs::Pose des_pose;
-			
-			des_pose.position.x =  transform_be.getOrigin().x();				des_pose.position.y =  transform_be.getOrigin().y();
-			
-			// Fix the z-axis translation of the end-effector
-			// Set z of the des_pose to the current z of the end-effector
-			// des_pose.position.z =  transform_be.getOrigin().z();
-			des_pose.position.z =  transform_be_old.getOrigin().z();
-
-			des_pose.orientation.x = transform_be.getRotation().x();
-			des_pose.orientation.y = transform_be.getRotation().y();
-			des_pose.orientation.z = transform_be.getRotation().z();
-			des_pose.orientation.w = transform_be.getRotation().w();
-
-			std::cout << transform_bs.getOrigin().z() << std::endl;
-			pub_pose.publish( des_pose );			
-		}
-		else { std::cout << "Not able to publish to /setpose" << std::endl; }
 
 		ros::spinOnce();
 

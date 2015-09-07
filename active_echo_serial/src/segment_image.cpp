@@ -34,7 +34,7 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 
 	// bool mid_plane = false;
 
-	double element_w = 0.45; // mm
+	double element_w = 0.3; // mm small probe : 3 mm & large probe 4.5 mm
 	double AE_SRate = 80*pow(10, 6); // hz
 	double SOS = 1480; // m/s
 	bool broadcast = true;
@@ -62,7 +62,10 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 			// Note: This inverse Gaussian solution assumes that the positive solution is taken, which will
 			// result in the robot moving in a single direction 
 			double scale = 5.0;
-			x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
+			if (msg->tc < 14) {
+				x = 0.002; 
+			}
+			// x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
 		}
 		y = ( msg->l_ta - 64.5)*element_w/1000; // Unit:m
 		z = -(msg->dly)*(1/AE_SRate)*SOS; // Unit:m
@@ -105,6 +108,8 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "segment_image");
 	ros::NodeHandle n;
+	
+	ros::Rate r(0.5); // Hz
 
 	ros::Subscriber sub = n.subscribe("active_echo_data", 100, segmentCallback);
 
@@ -115,6 +120,8 @@ int main(int argc, char **argv)
 	server.setCallback(f);
 
 	ros::spin();
+	
+	r.sleep();
 
 	return 0;
 }

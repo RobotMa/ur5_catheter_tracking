@@ -267,7 +267,7 @@ int main( int argc, char** argv ){
  
     // Rate (Hz) of the trajectory
     // http://wiki.ros.org/roscpp/Overview/Time
-    ros::Rate rate( 75 );            // the trajectory rate
+    ros::Rate rate( 10 );            // the trajectory rate
     double period = 2.0/150.0;        // the period
     double positionincrement = 2.0/150.0;
     ros::Duration time_from_start( 0.0 );
