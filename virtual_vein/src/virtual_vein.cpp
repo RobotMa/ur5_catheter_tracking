@@ -16,7 +16,10 @@ int main( int argc, char** argv )
 
 	visualization_msgs::Marker points;
 	points.header.frame_id = "/base_link";
-	points.header.stamp = ros::Time::now();
+	
+	// Note taht ros::Time(0) is treated specifically by tf::MessageFilter
+	// and is not check for being too old
+	points.header.stamp = ros::Time(0);
 	points.ns = "vein_points";
 	points.action = visualization_msgs::Marker::ADD;
 	points.pose.orientation.w = 1.0;
@@ -26,11 +29,11 @@ int main( int argc, char** argv )
 	points.type = visualization_msgs::Marker::POINTS;
 
 	// POINTS markers use x and y scale for width/height respectively
-	points.scale.x = 0.01;
-	points.scale.y = 0.01;
+	points.scale.x = 0.001;
+	points.scale.y = 0.001;
 
 	// Points are green
-	points.color.g = 1.0f;
+	points.color.r = 1.0f;
 	points.color.a = 1.0;
 
 	float f = 0.0;
@@ -47,7 +50,7 @@ int main( int argc, char** argv )
 			std::string ref_frame( "base_link");
 			std::string tgt_frame( "segment_point" );
 
-			listener.waitForTransform( ref_frame, tgt_frame, ros::Time(0), ros::Duration(1) );
+			listener.waitForTransform( ref_frame, tgt_frame, ros::Time(0), ros::Duration(5) );
 			listener.lookupTransform( ref_frame, tgt_frame, ros::Time(0), transform_bp );
 
 

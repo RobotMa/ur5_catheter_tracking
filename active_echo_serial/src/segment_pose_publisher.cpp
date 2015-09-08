@@ -8,7 +8,7 @@
 #include <math.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <dynamic_reconfig/ultrasound_ur5Config.h>
+#include <dynamic_reconfig/segment_pose_publisherConfig.h>
 
 // This node uses the pose of /segment_point to calculate the new desired pose
 // of /ee_link 
@@ -16,10 +16,10 @@
 // Track the segmented point
 static bool g_track = false;
 
-void dynamiconfigCallback(dynamic_reconfig::ultrasound_ur5Config &config, uint32_t level)
+void dynamiconfigCallback(dynamic_reconfig::segment_pose_publisherConfig &config, uint32_t level)
 {
-	g_track = config.enable_tracking;
-	ROS_INFO("Reconfigure Request: %s", config.enable_tracking?"True":"False");
+	g_track = config.Enable_Tracking;
+	ROS_INFO("Reconfigure Request: %s", config.Enable_Tracking?"True":"False");
 }
 
 int main(int argc, char **argv)
@@ -35,8 +35,8 @@ int main(int argc, char **argv)
 
 
 	// Dynamic reconfigure callback 
-	dynamic_reconfigure::Server<dynamic_reconfig::ultrasound_ur5Config> server;
-	dynamic_reconfigure::Server<dynamic_reconfig::ultrasound_ur5Config>::CallbackType f;
+	dynamic_reconfigure::Server<dynamic_reconfig::segment_pose_publisherConfig> server;
+	dynamic_reconfigure::Server<dynamic_reconfig::segment_pose_publisherConfig>::CallbackType f;
 
 	f = boost::bind(&dynamiconfigCallback, _1, _2);
 	server.setCallback(f);

@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
 # find_package(Boost REQUIRED COMPONENTS system)
 generate_dynamic_reconfigure_options(
   cfg/ultrasound_ur5.cfg
+  cfg/segment_image.cfg
+  cfg/segment_pose_publisher.cfg
 )
 
 ## Uncomment this if the package has a setup.py. This macro ensures
