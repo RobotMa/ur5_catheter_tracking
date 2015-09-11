@@ -79,6 +79,7 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 			if ( move_forward == false ) {  direction = -1;  }
 			if (msg->tc < 20) {
 				x = direction*(t_s - msg->tc)/5*step*0.001; // m 
+				// x = direction*step*0.001; // m 
 			}
 			// x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
 		}
@@ -127,9 +128,9 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "segment_image");
 	ros::NodeHandle n;
 	
-	ros::Rate r(1); // Hz
+	ros::Rate r(50); // Hz
 
-	ros::Subscriber sub = n.subscribe("active_echo_data", 100, segmentCallback);
+	ros::Subscriber sub = n.subscribe("active_echo_data", 5, segmentCallback);
 
 	dynamic_reconfigure::Server<dynamic_reconfig::segment_imageConfig> server;
 	dynamic_reconfigure::Server<dynamic_reconfig::segment_imageConfig>::CallbackType f;

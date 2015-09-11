@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 	f = boost::bind(&dynamiconfigCallback, _1, _2);
 	server.setCallback(f);
 
-	ros::Rate r(50); // 10 Hz
+	ros::Rate r(20); // 10 Hz
 	// bool pub = true; // Publish to setpose if a valid des_pose is obtained 
 
 	while ( ros::ok() ){
