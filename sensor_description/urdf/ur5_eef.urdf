@@ -243,8 +243,9 @@
       <geometry>
         <mesh filename="package://sensor_description/meshes/Ultra_Sensor.STL"/>
       </geometry>
-      <material name="">
-        <color rgba="0.79216 0.81961 0.93333 1"/>
+      <material name="Yellow">
+	      <!--color rgba="0.79216 0.81961 0.93333 1"/-->
+	      <color rgba="0.7411 0.7176 0.4196 1" />
       </material>
     </visual>
     <collision>

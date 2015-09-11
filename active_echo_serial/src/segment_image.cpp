@@ -54,6 +54,7 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 	// Publish the x of the segmented point ahead of the ultrasound mid-plane
 	// if direction = 1; behind the ultrasound mid-plane when direction = -1
 	double direction = 1; 
+	const int t_s = 20; // counter threshold
 
 	try {
 		if (g_mid_plane == true) {
@@ -73,11 +74,11 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 			// result in the robot moving in a single direction 
 			double scale = 5.0;
 
-			// Change the relative direction of the segmented point wrt the mid-plane
+			// Change the relative direction of the segmented point w.r.t. the mid-plane
 			// This will result in the change of moving direction of the robot arm 
 			if ( move_forward == false ) {  direction = -1;  }
-			if (msg->tc < 18) {
-				x = direction*step*0.001; // m 
+			if (msg->tc < 20) {
+				x = direction*(t_s - msg->tc)/5*step*0.001; // m 
 			}
 			// x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
 		}
