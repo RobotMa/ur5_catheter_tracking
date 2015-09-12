@@ -15,7 +15,7 @@
 
 static bool g_mid_plane = true;
 static bool move_forward = true; 
-static int step = 1;              // Step length along x-axis
+static int step = 0;              // Step length along x-axis
 
 void dynamiconfigCallback(dynamic_reconfig::segment_imageConfig &config, uint32_t level)
 {
@@ -79,8 +79,10 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 			if ( move_forward == false ) {  direction = -1;  }
 			if (msg->tc < 20) {
 				x = direction*(t_s - msg->tc)/5*step*0.001; // m 
+				
 				// x = direction*step*0.001; // m 
 			}
+			std::cout << "x of the segmented pose is " << x << std::endl;
 			// x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
 		}
 		y = ( msg->l_ta - 64.5)*element_w/1000; // Unit:m
@@ -128,9 +130,9 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "segment_image");
 	ros::NodeHandle n;
 	
-	ros::Rate r(50); // Hz
+	ros::Rate r(10); // Hz
 
-	ros::Subscriber sub = n.subscribe("active_echo_data", 5, segmentCallback);
+	ros::Subscriber sub = n.subscribe("active_echo_data", 1, segmentCallback);
 
 	dynamic_reconfigure::Server<dynamic_reconfig::segment_imageConfig> server;
 	dynamic_reconfigure::Server<dynamic_reconfig::segment_imageConfig>::CallbackType f;

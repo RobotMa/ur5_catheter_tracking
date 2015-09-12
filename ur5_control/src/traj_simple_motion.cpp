@@ -61,67 +61,6 @@ Eigen::MatrixXf invJacobian( const sensor_msgs::JointState& jointstate) {
 		H = H*UR5::dhf(UR5::alpha[i], UR5::a[i], UR5::d[i], q[i]);
 	}
 
-	/*
-	   double c1 = cos(q[0]); double s1 = sin(q[0]); double c2 = cos(q[1]); double s2 = sin(q[1]);double c5 = cos(q[4]); 
-	   double s5 = sin(q[4]); double c6 = cos(q[5]); double s6 = sin(q[5]);
-	   double s23 = sin(q[1]+q[2]); double c23 = cos(q[1]+q[2]); double s234 = sin(q[1]+q[2]+q[3]);  double c234 = cos(q[1]+q[2]+q[3]); 
-	//Fixed-Frame Vels
-	double r11 = 0;
-	double r12 = -s1;
-	double  r13 = -s1;
-	double  r14 = -s1;
-	double  r15 = -c1*s234;
-	double  r16 = (c1*c234*s5 - s1*c5);
-	double  r21 = 0;
-	double  r22 = c1;
-	double  r23 = c1;
-	double r24 = c1;
-	double r25 = -s1*s234;
-	double r26 = (c1*c5 + s1*c234*s5);
-	double r31 = 1;
-	double r32 = 0;
-	double r33 = 0; 
-	double r34 = 0;
-	double r35 = -c234;
-	double r36 = -s234*s5;
-
-	double t11 = ((1893*s1*s234)/20 - (823*c1*c5)/10 - 425*s1*c2 - (2183*c1)/20 - (1569*s1*c23)/4 - (823*s1*c234*s5)/10)/1000;
-	double t12 = -(c1*(1893*c234 + 7845*s23 + 8500*s2 + 1646*s234*s5))/20000;
-	double t13 = -(c1*(1893*c234 + 7845*s23 + 1646*s234*s5))/20000;
-	double t14 = -(c1*(1893*c234 + 1646*s234*s5))/20000;
-	double t15 = ((823*s1*s5)/10 + (823*c1*c234*c5)/10)/1000; 
-	double t16 = 0;
-	double t21 = (425*c1*c2 - (2183*s1)/20 - (823*s1*c5)/10 - (1893*c1*s234)/20 + (1569*c1*c23)/4 + (823*c1*c234*s5)/10)/1000;
-	double t22 = -(s1*(1893*c234 + 7845*s23 + 8500*s2 + 1646*s234*s5))/20000;
-	double t23 = -(s1*(1893*c234 + 7845*s23 + 1646*s234*s5))/20000;
-	double t24 = -(s1*(1893*c234 + 1646*s234*s5))/20000;
-	double t25 = ((823*s1*c234*c5)/10 - (823*c1*s5)/10)/1000; 
-	double t26 = 0;
-	double t31 = 0;
-	double t32 = (1893*s234)/20000 - (1569*c23)/4000 - (425*c2)/1000 - (823*c234*s5)/10000;
-	double t33 = (1893*s234)/20000 - (1569*c23)/4000 - (823*c234*s5)/10000;
-	double t34 = (1893*s234)/20000 - (823*c234*s5)/10000;
-	double t35 =  -(823*s234*c5)/10000;
-	double t36 = 0;
-
-	//Eigen::MatrixXf J_R(6,6);
-	/* J << t11, t12, t13, t14, t15, t16,
-	t21, t22, t23, t24, t25, t26,
-	t31, t32, t33, t34, t35, t36,
-	r11, r12, r13, r14, r15, r16,
-	r21, r22, r23, r24, r25, r26,
-	r31, r32, r33, r34, r35, r36;
-	*/
-	//J1.block<6,6>(0,0) = J_R;
-
-	/*
-	   std::cout << "J" << J << std::endl;
-	   std::cout << "    " << std::endl;
-	   std::cout << "J1" << J1 << std::endl;
-	   std::cout << "    " << std::endl;
-	   */
-
-
 	//Check to see if invJacobian is near singular
 	if (fabs(J.determinant()) < 10e-9) {
 		std::cout << "Jacobian is near singular." << std::endl;
@@ -267,9 +206,9 @@ int main( int argc, char** argv ){
 
 	// Rate (Hz) of the trajectory
 	// http://wiki.ros.org/roscpp/Overview/Time
-	ros::Rate rate( 100 );            // the trajectory rate
-	double period = 1.0/200.0;        // the period
-	double positionincrement = 1.0/200.0;
+	ros::Rate rate( 50 );            // the trajectory rate
+	double period = 1.0/100.0;        // the period
+	double positionincrement = 1.0/100.0;
 	ros::Duration time_from_start( 0.0 );
 
 	bool readinitpose = true;                       // used to initialize setpose
@@ -495,7 +434,7 @@ int main( int argc, char** argv ){
 				spoof_first_move.publish(firstMove_end);
 			}
 
-			!solver ? scale = 0.05 : scale = 0.5; // Previously 0.2
+			!solver ? scale = 0.1 : scale = 0.5; // Previously 0.2
 			std::cout << "Norm of the position error is " << evel.norm() << std::endl;
 			if (evel.norm() <= positionincrement*scale) {	 
 				moving = false;
