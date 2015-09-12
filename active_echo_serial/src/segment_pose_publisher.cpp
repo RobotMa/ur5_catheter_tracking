@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 	f = boost::bind(&dynamiconfigCallback, _1, _2);
 	server.setCallback(f);
 
-	ros::Rate r(50); // 10 Hz
+	ros::Rate r(10); // 10 Hz
 	// bool pub = true; // Publish to setpose if a valid des_pose is obtained 
 
 	while ( ros::ok() ){
@@ -104,7 +104,13 @@ int main(int argc, char **argv)
 				des_pose.orientation.z = transform_be.getRotation().z();
 				des_pose.orientation.w = transform_be.getRotation().w();
 
-				std::cout << transform_bs.getOrigin().z() << std::endl;
+				std::cout << "Current pose x is " << transform_be_old.getOrigin().x() << std::endl;
+				std::cout << "Current pose y is " << transform_be_old.getOrigin().y() << std::endl;
+				std::cout << "Current pose z is " << transform_be_old.getOrigin().z() << std::endl; 
+				
+				std::cout << "Future pose x is " << des_pose.position.x << std::endl;
+				std::cout << "Future pose y is " << des_pose.position.y << std::endl;
+				std::cout << "Future pose z is " << des_pose.position.z << std::endl;
 				pub_pose.publish( des_pose );			
 			}
 			else { std::cout << "Not able to publish to /setpose" << std::endl; }

@@ -137,7 +137,10 @@ Eigen::VectorXf lieAlgebra(Eigen::MatrixXf pose) {
 
 	Eigen::Matrix3f R;
 	Eigen::Vector3f omega, v;
+	
+	// test translation error only
 	Eigen::VectorXf si(6);
+	// Eigen::VectorXf si(6);
 	R = pose.block<3,3>(0,0);
 	Eigen::MatrixXf wl = R.log();
 	Eigen::Vector3f w;
@@ -145,6 +148,7 @@ Eigen::VectorXf lieAlgebra(Eigen::MatrixXf pose) {
 	  wl(0,2),
 	  wl(1,0);
 	v = pose.block<3,1>(0,3);
+	
 	si.head(3) = v;
 	si.tail(3) = w;
 
@@ -267,9 +271,9 @@ int main( int argc, char** argv ){
 
 	// Rate (Hz) of the trajectory
 	// http://wiki.ros.org/roscpp/Overview/Time
-	ros::Rate rate( 100 );            // the trajectory rate
-	double period = 1.0/200.0;        // the period
-	double positionincrement = 1.0/200.0;
+	ros::Rate rate( 50 );            // the trajectory rate
+	double period = 1.0/100.0;        // the period
+	double positionincrement = 1.0/100.0;
 	ros::Duration time_from_start( 0.0 );
 
 	bool readinitpose = true;                       // used to initialize setpose
@@ -495,7 +499,7 @@ int main( int argc, char** argv ){
 				spoof_first_move.publish(firstMove_end);
 			}
 
-			!solver ? scale = 0.05 : scale = 0.5; // Previously 0.2
+			!solver ? scale = 0.1 : scale = 0.5; // Previously 0.2
 			std::cout << "Norm of the position error is " << evel.norm() << std::endl;
 			if (evel.norm() <= positionincrement*scale) {	 
 				moving = false;

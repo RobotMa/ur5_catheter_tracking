@@ -128,7 +128,7 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "segment_image");
 	ros::NodeHandle n;
 	
-	ros::Rate r(50); // Hz
+	ros::Rate r(1); // Hz
 
 	ros::Subscriber sub = n.subscribe("active_echo_data", 5, segmentCallback);
 
