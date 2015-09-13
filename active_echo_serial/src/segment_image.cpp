@@ -83,7 +83,8 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 			}
 			// x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
 		}
-		y = ( msg->l_ta - 64.5)*element_w/1000; // Unit:m
+		// y = ( msg->l_ta - 64.5)*element_w/1000; // Unit:m
+		y = ceil(msg->l_ta - 64.5)*element_w/1000;
 		z = -(msg->dly)*(1/AE_SRate)*SOS; // Unit:m
 
 
@@ -101,6 +102,8 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 	if ( fabs(z) < 0.06 && msg->tc > 0  && broadcast == true ) {
 
 		transform.setOrigin( tf::Vector3(x, y, z));
+		std::cout << "Value of x is " << x << std::endl;
+		std::cout << "Value of y is " << y << std::endl;
 		q.setRPY(0, 0, 0);
 		transform.setRotation(q);
                 std::cout << "Preparing to broadcast the transform" << std::endl;
