@@ -99,7 +99,7 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 	}
 	
 	// Filter out outliers of /segment_point
-	if ( fabs(z) < 0.06 && msg->tc > 0  && broadcast == true ) {
+	if ( msg->dly < 2600 && msg->tc > 0  && broadcast == true ) {
 
 		transform.setOrigin( tf::Vector3(x, y, z));
 		std::cout << "Value of x is " << x << std::endl;
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "segment_image");
 	ros::NodeHandle n;
 	
-	ros::Rate r(1); // Hz
+	ros::Rate r(10); // Hz
 
 	ros::Subscriber sub = n.subscribe("active_echo_data", 5, segmentCallback);
 

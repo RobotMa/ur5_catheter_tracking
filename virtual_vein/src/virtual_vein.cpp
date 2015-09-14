@@ -12,7 +12,7 @@ int main( int argc, char** argv )
 
 	tf::TransformListener listener;
 
-	ros::Rate r(1);
+	ros::Rate r(20);
 
 	visualization_msgs::Marker points;
 	points.header.frame_id = "/base_link";

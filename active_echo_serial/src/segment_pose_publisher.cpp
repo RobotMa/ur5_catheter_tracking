@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 			// transform_be_calc.mult(transform_be, transform_ue);
 			
 			// transform_be.mult(transform_be, transform_ue);
-			
+			/*
 			tf::Pose H1, H2, H3, H4, H5;
 
 			H1.setOrigin(   transform_bu.getOrigin() );
@@ -150,7 +150,7 @@ int main(int argc, char **argv)
 			std::cout << Hf_5 << std::endl;
 			std::cout << " Pose of H3 - H4 is" << std::endl;
 			std::cout << Hf_3 - Hf_4 << std::endl;
-
+			*/
 			if (g_track == true) {
 
 				// Convert tf::Transform to geometry_msgs::Pose for publishing
