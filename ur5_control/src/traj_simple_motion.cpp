@@ -477,7 +477,7 @@ int main( int argc, char** argv ){
 				// Compute the joint velocity by multiplying Ji by v
 				Eigen::VectorXf qd(6);
 				//evel = (evel/(1+evel.norm()))*positionincrement; 
-				evt = (evel/evel.norm())*positionincrement*0.01; // previously 0.05
+				evt = (evel/evel.norm())*positionincrement*0.05; // previously 0.05
 				qd = Ji*evt;
 				for (int j = 0; j < 6; j++) {
 					jointstate.position[j] -= qd(j);

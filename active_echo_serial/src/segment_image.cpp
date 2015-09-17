@@ -16,16 +16,19 @@
 static bool g_mid_plane = true;
 static bool move_forward = true; 
 static int step = 1;              // Step length along x-axis
+static int step_scaler = 1;
 
 void dynamiconfigCallback(dynamic_reconfig::segment_imageConfig &config, uint32_t level)
 {
 	g_mid_plane = config.In_Plane_Assumption;
 	move_forward = config.Move_Forward;
-	step = config.Step_Length; 
-	ROS_INFO("Reconfigure Request: %s %s %i", 
+	step = config.Step_Length;
+	step_scaler = config.Step_Scaler; 
+	ROS_INFO("Reconfigure Request: %s %s %i %i", 
 		  config.In_Plane_Assumption?"True":"False",
 		  config.Move_Forward?"True":"False",
-		  config.Step_Length);
+		  config.Step_Length,
+		  config.Step_Scaler);
 }
 
 
@@ -42,6 +45,7 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 	double AE_SRate = 80*pow(10, 6); // hz
 	double SOS = 1480; // m/s
 	 bool broadcast = true;
+
 	// Linear ultrasound probe
 	// Note: x and y are flipped so that the reference frame of the probe
 	// and the robot based will be parallel to each while at working status
@@ -53,10 +57,13 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 
 	// Publish the x of the segmented point ahead of the ultrasound mid-plane
 	// if direction = 1; behind the ultrasound mid-plane when direction = -1
-	double direction = 1; 
-	const int t_s = 20; // counter threshold
+	double direction = 1;
+	const int t_s = 25; // counter threshold
 
 	try {
+
+		y = ceil(msg->l_ta - 64.5)*element_w/1000;
+		z = -(msg->dly)*(1/AE_SRate)*SOS; // Unit:m
 		if (g_mid_plane == true) {
 
 			x = 0.0; // Assume that the segmented point falls within the mid-plane
@@ -77,15 +84,15 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 			// Change the relative direction of the segmented point w.r.t. the mid-plane
 			// This will result in the change of moving direction of the robot arm 
 			if ( move_forward == false ) {  direction = -1;  }
-			if (msg->tc < 20) {
-				x = direction*(t_s - msg->tc)/5*step*0.001; // m 
+			if (msg->tc < t_s) {
+				if ( fabs(y) > 0.003 ) {x = 2*direction*(t_s - msg->tc)/5*step/2/step_scaler*0.001;}
+				else {x = direction*(t_s - msg->tc)/5*step/2/step_scaler*0.001;} // m 
 				// x = direction*step*0.001; // m 
 			}
 			// x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
 		}
 		// y = ( msg->l_ta - 64.5)*element_w/1000; // Unit:m
-		y = ceil(msg->l_ta - 64.5)*element_w/1000;
-		z = -(msg->dly)*(1/AE_SRate)*SOS; // Unit:m
+		
 
 
 		if ( !isnan(x) ) {
@@ -99,7 +106,7 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 	}
 	
 	// Filter out outliers of /segment_point
-	if ( msg->dly < 2600 && msg->tc > 0  && broadcast == true ) {
+	if ( abs(msg->dly) < 2600 && msg->tc > 0  && broadcast == true ) {
 
 		transform.setOrigin( tf::Vector3(x, y, z));
 		std::cout << "Value of x is " << x << std::endl;
@@ -131,7 +138,8 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "segment_image");
 	ros::NodeHandle n;
 	
-	ros::Rate r(10); // Hz
+	int rate = 10*step_scaler;
+	ros::Rate r(rate); // Hz
 
 	ros::Subscriber sub = n.subscribe("active_echo_data", 5, segmentCallback);
 
