@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 			std::string tgs_frame( "segment_point" );
 			std::string tgu_frame( "ultrasound_sensor" );
 
-			listener_1.waitForTransform( tgu_frame, tge_frame, ros::Time(0), ros::Duration(0.8) );
+			listener_1.waitForTransform( tgu_frame, tge_frame, ros::Time(0), ros::Duration(0.1) );
 			listener_1.lookupTransform( tgu_frame, tge_frame, ros::Time(0), transform_ue );
 
 			// listener_2.waitForTransform( ref_frame, tgs_frame, ros::Time(0), ros::Duration(0.8)  );

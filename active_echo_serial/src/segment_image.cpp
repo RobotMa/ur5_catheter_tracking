@@ -117,6 +117,12 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),"ultrasound_sensor", "segment_point"));
 
 	}
+	else if (abs(msg->dly) > 3000 && broadcast == true && msg->tc > 30 ) {
+		transform.setOrigin (tf::Vector3(0.001,y,z));
+		q.setRPY(0,0,0);
+		transform.setRotation(q);
+		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "ultrasound_sensor", "segment_point"));
+	}
 	else {	std::cout << "Broadcast to /segment_point failed "; }
 
 	// Test whehter dynamic reconfigure changes the value of mid_plane
