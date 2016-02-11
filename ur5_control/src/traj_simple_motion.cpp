@@ -61,67 +61,6 @@ Eigen::MatrixXf invJacobian( const sensor_msgs::JointState& jointstate) {
 		H = H*UR5::dhf(UR5::alpha[i], UR5::a[i], UR5::d[i], q[i]);
 	}
 
-	/*
-	   double c1 = cos(q[0]); double s1 = sin(q[0]); double c2 = cos(q[1]); double s2 = sin(q[1]);double c5 = cos(q[4]); 
-	   double s5 = sin(q[4]); double c6 = cos(q[5]); double s6 = sin(q[5]);
-	   double s23 = sin(q[1]+q[2]); double c23 = cos(q[1]+q[2]); double s234 = sin(q[1]+q[2]+q[3]);  double c234 = cos(q[1]+q[2]+q[3]); 
-	//Fixed-Frame Vels
-	double r11 = 0;
-	double r12 = -s1;
-	double  r13 = -s1;
-	double  r14 = -s1;
-	double  r15 = -c1*s234;
-	double  r16 = (c1*c234*s5 - s1*c5);
-	double  r21 = 0;
-	double  r22 = c1;
-	double  r23 = c1;
-	double r24 = c1;
-	double r25 = -s1*s234;
-	double r26 = (c1*c5 + s1*c234*s5);
-	double r31 = 1;
-	double r32 = 0;
-	double r33 = 0; 
-	double r34 = 0;
-	double r35 = -c234;
-	double r36 = -s234*s5;
-
-	double t11 = ((1893*s1*s234)/20 - (823*c1*c5)/10 - 425*s1*c2 - (2183*c1)/20 - (1569*s1*c23)/4 - (823*s1*c234*s5)/10)/1000;
-	double t12 = -(c1*(1893*c234 + 7845*s23 + 8500*s2 + 1646*s234*s5))/20000;
-	double t13 = -(c1*(1893*c234 + 7845*s23 + 1646*s234*s5))/20000;
-	double t14 = -(c1*(1893*c234 + 1646*s234*s5))/20000;
-	double t15 = ((823*s1*s5)/10 + (823*c1*c234*c5)/10)/1000; 
-	double t16 = 0;
-	double t21 = (425*c1*c2 - (2183*s1)/20 - (823*s1*c5)/10 - (1893*c1*s234)/20 + (1569*c1*c23)/4 + (823*c1*c234*s5)/10)/1000;
-	double t22 = -(s1*(1893*c234 + 7845*s23 + 8500*s2 + 1646*s234*s5))/20000;
-	double t23 = -(s1*(1893*c234 + 7845*s23 + 1646*s234*s5))/20000;
-	double t24 = -(s1*(1893*c234 + 1646*s234*s5))/20000;
-	double t25 = ((823*s1*c234*c5)/10 - (823*c1*s5)/10)/1000; 
-	double t26 = 0;
-	double t31 = 0;
-	double t32 = (1893*s234)/20000 - (1569*c23)/4000 - (425*c2)/1000 - (823*c234*s5)/10000;
-	double t33 = (1893*s234)/20000 - (1569*c23)/4000 - (823*c234*s5)/10000;
-	double t34 = (1893*s234)/20000 - (823*c234*s5)/10000;
-	double t35 =  -(823*s234*c5)/10000;
-	double t36 = 0;
-
-	//Eigen::MatrixXf J_R(6,6);
-	/* J << t11, t12, t13, t14, t15, t16,
-	t21, t22, t23, t24, t25, t26,
-	t31, t32, t33, t34, t35, t36,
-	r11, r12, r13, r14, r15, r16,
-	r21, r22, r23, r24, r25, r26,
-	r31, r32, r33, r34, r35, r36;
-	*/
-	//J1.block<6,6>(0,0) = J_R;
-
-	/*
-	   std::cout << "J" << J << std::endl;
-	   std::cout << "    " << std::endl;
-	   std::cout << "J1" << J1 << std::endl;
-	   std::cout << "    " << std::endl;
-	   */
-
-
 	//Check to see if invJacobian is near singular
 	if (fabs(J.determinant()) < 10e-9) {
 		std::cout << "Jacobian is near singular." << std::endl;
@@ -197,24 +136,13 @@ void callback_joint_states( const sensor_msgs::JointState& js ) {
 	}
 }
 
-
-// actionlib
-trajectory_msgs::JointTrajectory joint_trajectory;
+ros::Publisher pub_jointstate_real;
 void callback_move( const std_msgs::Bool& move ){
 
-	static actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> ac( "follow_joint_trajectory", true );
-
 	if( move.data ){
-
-		control_msgs::FollowJointTrajectoryGoal goal;
-		goal.trajectory = joint_trajectory;
-		std::cout << goal << std::endl;
-
-		ac.sendGoal( goal );
-		joint_trajectory.points.clear();
-
+	  //Publish the data to the python driver node
+	  pub_jointstate_real.publish( jointstate_init );
 	}
-
 }
 
 int main( int argc, char** argv ){
@@ -227,7 +155,8 @@ int main( int argc, char** argv ){
 	ros::NodeHandle nm;
 
 	// publishing joint trajectory
-	std::string published_topic_name( "/joint_trajectory" );
+	std::string published_topic_name_sim( "/joint_trajectory_sim" );
+	std::string published_topic_name( "/joint_trajectory_real" );
 
 	// Create a publisher that will publish joint states on the topic
 	// /joint_states
@@ -237,8 +166,10 @@ int main( int argc, char** argv ){
 	// The size of publishing queue is 1 which means it will only buffer
 	// up 1 message. The old message will be thrown away immediately
 	// if a new one is received
-	ros::Publisher pub_jointstate;
-	pub_jointstate = nh.advertise<sensor_msgs::JointState>( published_topic_name, 1 );
+	ros::Publisher pub_jointstate_sim;
+
+	pub_jointstate_sim = nh.advertise<sensor_msgs::JointState>( published_topic_name_sim, 1 );
+	pub_jointstate_real = nh.advertise<sensor_msgs::JointState>( published_topic_name, 1 );
 
 	//Experimental to get robot to move immediately
 
@@ -260,9 +191,7 @@ int main( int argc, char** argv ){
 	full_joint_states = nh.subscribe( "joint_states", 1, callback_joint_states );
 
 	//Object to publish desired joint positions of the robot
-	// sensor_msgs::JointState jointstate;
 	sensor_msgs::JointState des_jointstate;
-	// sensor_msgs::JointState joint_temp;
 
 
 	// To listen to the current position and orientation of the robot
@@ -287,7 +216,7 @@ int main( int argc, char** argv ){
 	// animate the motion of the robot
 	// The loop exits when CTRL-C is pressed.
 	while( nh.ok() ){
-
+	  ros::Time begin = ros::Time::now();
 		// Read the current forward kinematics of the robot
 		tf::Pose current_pose;
 
@@ -430,7 +359,12 @@ int main( int argc, char** argv ){
 
 			//After pose is updated, change the initial position to current position
 			moving = true;
-			joint_trajectory.points.clear();
+
+			//New implementation
+			jointstate_init.header.stamp = ros::Time::now();
+			pub_jointstate_real.publish( jointstate_init );
+
+			/*joint_trajectory.points.clear();
 			time_from_start = ros::Duration(0.0);
 			trajectory_msgs::JointTrajectoryPoint point;
 			point.positions = jointstate_init.position;
@@ -440,6 +374,7 @@ int main( int argc, char** argv ){
 
 			joint_trajectory.points.push_back( point );
 			joint_trajectory.joint_names = jointstate_init.name;
+			*/
 
 		}
 		//Iterate over trajectory to generate motion
@@ -484,13 +419,15 @@ int main( int argc, char** argv ){
 				} 
 
 			}
-
+			/*
 			trajectory_msgs::JointTrajectoryPoint point;
 			point.positions = jointstate.position;
 			point.velocities = std::vector<double>( 6, 0.0 );
 			point.time_from_start = time_from_start; 
 			time_from_start = time_from_start + ros::Duration( period );
 			joint_trajectory.points.push_back( point ); 
+			*/
+			//Just need to pass joint values now (i.e. jointstate.position;
 
 			//Set robot to move
 			if (robot_mover) {
@@ -504,10 +441,12 @@ int main( int argc, char** argv ){
 			if (evel.norm() <= positionincrement*scale) {	 
 				moving = false;
 				if (solver) {
+				  /*
 					point.positions = des_jointstate.position;
 					point.velocities = std::vector<double>( 6, 0.0 );
 					point.time_from_start = time_from_start;
 					joint_trajectory.points.push_back( point ); 
+				  */
 					jointstate_init = des_jointstate;
 				}
 				continue;
@@ -521,9 +460,11 @@ int main( int argc, char** argv ){
 
 		// publish the joint states
 		jointstate_init.header.stamp = ros::Time::now();
-		pub_jointstate.publish( jointstate_init );
+		pub_jointstate_sim.publish( jointstate_init );
 
 		// Go through callback functions
+		ros::Time end_time = ros::Time::now();
+		std::cout << "time for loop:" << " " << end_time - begin  << std::endl;
 		ros::spinOnce();
 
 		// sleep
