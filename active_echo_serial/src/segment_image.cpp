@@ -154,10 +154,11 @@ int main(int argc, char **argv)
 
 	f = boost::bind(&dynamiconfigCallback, _1, _2);
 	server.setCallback(f);
-
-	ros::spin();
+	while ( ros::ok() ) {
+	  ros::spinOnce();
 	
-	r.sleep();
+	  r.sleep();
+	}
 
 	return 0;
 }
