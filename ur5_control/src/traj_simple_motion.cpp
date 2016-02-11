@@ -200,7 +200,7 @@ int main( int argc, char** argv ){
 
 	// Rate (Hz) of the trajectory
 	// http://wiki.ros.org/roscpp/Overview/Time
-	ros::Rate rate( 50 );            // the trajectory rate
+	ros::Rate rate( 50 );            // the trajectory rate //When computing Jacobian, average loop time is 0.002 sec
 	double period = 1.0/100.0;        // the period
 	double positionincrement = 1.0/100.0;
 	ros::Duration time_from_start( 0.0 );
@@ -215,8 +215,10 @@ int main( int argc, char** argv ){
 	// At each iteration it computes and publishes a new joint positions that
 	// animate the motion of the robot
 	// The loop exits when CTRL-C is pressed.
+
+
+	//We should be able to run this loop quicker or with larger steps in joint positions, basically, we check for a new pose 50 times a second, if we don't get one we continue to servo the provided desired position.
 	while( nh.ok() ){
-	  ros::Time begin = ros::Time::now();
 		// Read the current forward kinematics of the robot
 		tf::Pose current_pose;
 
@@ -245,7 +247,7 @@ int main( int argc, char** argv ){
 			/* This is used to initialize the pose (a small hack)*/
 			if( readinitpose ){
 				setpose = current_pose;
-				readinitpose = false;
+				readinitpose = false;		
 			}
 
 		}
@@ -412,7 +414,7 @@ int main( int argc, char** argv ){
 				// Compute the joint velocity by multiplying Ji by v
 				Eigen::VectorXf qd(6);
 				//evel = (evel/(1+evel.norm()))*positionincrement; 
-				evt = (evel/evel.norm())*positionincrement*0.025; // previously 0.05
+				evt = (evel/evel.norm())*positionincrement*0.1; // previously 0.025
 				qd = Ji*evt;
 				for (int j = 0; j < 6; j++) {
 					jointstate.position[j] -= qd(j);
@@ -463,8 +465,6 @@ int main( int argc, char** argv ){
 		pub_jointstate_sim.publish( jointstate_init );
 
 		// Go through callback functions
-		ros::Time end_time = ros::Time::now();
-		std::cout << "time for loop:" << " " << end_time - begin  << std::endl;
 		ros::spinOnce();
 
 		// sleep

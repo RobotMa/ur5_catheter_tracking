@@ -10,11 +10,19 @@
   <param name="robot_move" value="true" type="bool" />
 
   <node
-      name="robot_state_publisher" 
+      name="robot_state_publisher_sim" 
       pkg="robot_state_publisher" 
       type="robot_state_publisher" 
       output="screen" >
-    <remap from="joint_states" to="joint_trajectory"/>
+    <remap from="joint_states" to="joint_trajectory_real"/>
+  </node>
+
+  <node
+      name="robot_state_publisher_real" 
+      pkg="robot_state_publisher" 
+      type="robot_state_publisher" 
+      output="screen" >
+    <remap from="joint_states" to="joint_trajectory_sim"/>
   </node>
   
   <node 

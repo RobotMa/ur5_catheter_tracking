@@ -149,6 +149,15 @@ int main(int argc, char **argv)
 
 	f = boost::bind(&dynamiconfigCallback, _1, _2);
 	server.setCallback(f);
+	
+	/*	//Alternate method after to implement after we determine the appropriate scaling time
+	ros::Timer timer1 = n.createTimer(ros::Duration(1.0), dynamiconfigCallback);
+	ros::Timer timer2 = n.createTimer(ros::Duration(0.1), segmentCallback);
+	ros::spin();
+	return 0;
+	*/
+
+
 	while(ros::ok()) {
 	  ros::spinOnce();
 	
