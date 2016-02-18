@@ -14,6 +14,7 @@ from std_msgs.msg import *
 import time
 # URX Universal Robot Driver
 import urx
+
 # OTHER
 import logging
 
@@ -44,15 +45,16 @@ class URDriver():
         self.set_stop_service = rospy.Service('simple_ur_msgs/SetStop', SetStop, self.set_stop_call)
         self.set_servo_mode_service = rospy.Service('simple_ur_msgs/SetServoMode', SetServoMode, self.set_servo_mode_call)
         # PUBLISHERS AND SUBSCRIBERS
-        self.driver_status_publisher = rospy.Publisher('/ur_robot/driver_status',String)
-        self.robot_state_publisher = rospy.Publisher('/ur_robot/robot_state',String)
-        self.joint_state_publisher = rospy.Publisher('joint_states',JointState)
+        self.driver_status_publisher = rospy.Publisher('/ur_robot/driver_status',String, queue_size = 5)
+        self.robot_state_publisher = rospy.Publisher('/ur_robot/robot_state',String,queue_size = 5 )
+        self.joint_state_publisher = rospy.Publisher('joint_states',JointState, queue_size = 5)
         self.desired_joint_state_subscriber = rospy.Subscriber('joint_trajectory_real', JointState, self.callback)
         #self.desired_joint_state_subscriber = rospy.Subscriber('joint_trajectory_real', JointState, self.callback, queue_size = 1)
 
         ### Set Up Robot ###
         #self.rob = urx.Robot("192.168.1.155", logLevel=logging.INFO)
-        self.rob = urx.Robot("192.168.1.155")
+        logging.basicConfig(level = logging.INFO)
+        self.rob = urx.Robot("10.162.43.69")
         if not self.rob:
             rospy.logwarn('SIMPLE UR  - ROBOT NOT CONNECTED')
             self.driver_status = 'DISCONNECTED'
@@ -62,6 +64,7 @@ class URDriver():
             self.rtm = self.rob.get_realtime_monitor()
             rospy.logwarn('SIMPLE UR - GOT REAL TIME INTERFACE TO ROBOT')        
             self.driver_status = 'IDLE'
+            self.robot_state = 'RUNNING_IDLE'
 
         ### Set Up PID ###
 
@@ -69,16 +72,18 @@ class URDriver():
         while not rospy.is_shutdown():
             self.update()
             self.check_driver_status()
-            self.check_robot_state()
+            # self.check_robot_state() # problematic now
             self.publish_status()
             self.dynamic_check()
-            rospy.spin()
+            # rospy.spin() 
+            # Unlike in roscpp, rospy.spin() doesn't affect the subscriber callback functions
+
             rospy.sleep(.01)
 
   
         # Finish
         rospy.logwarn('SIMPLE UR - ROBOT INTERFACE CLOSING')
-        self.rob.shutdown()
+        self.rob.close()
 
     def dynamic_callback(self, config, level):
         rospy.loginfo("Config set to: {UR5_Enabled}".format(**config))
@@ -87,16 +92,16 @@ class URDriver():
 
     def callback(self,data):
         if self.driver_status == 'SERVO':
-            a = 0.1
-            v = 0.07
-            pose[0] = data.positon[0]
-            pose[1] = data.positon[1]
-            pose[2] = data.positon[2]
-            pose[3] = data.positon[3]
-            pose[4] = data.positon[4]
-            pose[5] = data.positon[5]
-            self.rob.movej(pose,acc=a,vel=v,wait=False)
-            self.service_disable()
+            a = 5 # 0.1
+            v = 2 # 0.07
+            # pose = []
+            # pose[0] = data.position[0]
+            # pose[1] = data.position[1]
+            # pose[2] = data.position[2]
+            # pose[3] = data.position[3]
+            # pose[4] = data.position[4]
+            # pose[5] = data.position[5]
+            self.rob.movej(data.position,acc=a,vel=v,wait=False)
         else:
             rospy.logwarn('SIMPLE UR -- cannot servo, UR5 is not enabled')
 
@@ -133,7 +138,7 @@ class URDriver():
             if self.UR5_Enabled == True:
                 self.servo_enable()
             else:
-                self.service_disable()
+                self.servo_disable()
             self.prev_state = self.UR5_Enabled
 
     def check_driver_status(self):
@@ -191,7 +196,7 @@ class URDriver():
         else:
             self.robot_state = 'RUNNING IDLE'
 
-def servo_enable(self):
+    def servo_enable(self):
         if self.driver_status == 'IDLE':
             try:
                 rospy.wait_for_service('/simple_ur_msgs/SetServoMode',2)
@@ -208,7 +213,7 @@ def servo_enable(self):
         else:
             rospy.logwarn('FAILED, driver is in ['+self.driver_status+'] mode.')
 
-def servo_disable(self):
+    def servo_disable(self):
         if self.driver_status == 'SERVO' or self.driver_status == 'FOLLOW':
             try:
                 rospy.wait_for_service('/simple_ur_msgs/SetServoMode',2)
