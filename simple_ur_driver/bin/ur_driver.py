@@ -4,6 +4,9 @@ import roslib; roslib.load_manifest('simple_ur_driver')
 import rospy
 import tf; import tf_conversions as tf_c
 import PyKDL
+#DYNAMIC RECONFIGURE
+from dynamic_reconfigure.server import Server
+from dynamic_reconfig.cfg import ur_driverConfig as ConfigType
 # MSGS and SERVICES
 from simple_ur_msgs.srv import *
 from sensor_msgs.msg import JointState
@@ -14,18 +17,7 @@ import urx
 # OTHER
 import logging
 
-def callback(self,data):
-    self.servo_enable()
-    a = 0.1
-    v = 0.07
-    pose[0] = data.positon[0]
-    pose[1] = data.positon[1]
-    pose[2] = data.positon[2]
-    pose[3] = data.positon[3]
-    pose[4] = data.positon[4]
-    pose[5] = data.positon[5]
-    self.rob.movej(pose,acc=a,vel=v,wait=False)
-    self.service_disable()
+
 
 class URDriver():
     MAX_ACC = 1.0
@@ -37,13 +29,14 @@ class URDriver():
     MULT_jointstate = 10000.0
     MULT_time = 1000000.0
     MULT_blend = 1000.0
+    prev_state = True
     
- 
-
 
     def __init__(self):
         rospy.init_node('ur_driver',anonymous=True)
         rospy.logwarn('SIMPLE_UR DRIVER LOADING')
+        self.dyn_reconfigure_server = Server(ConfigType, self.dynamic_callback) #edit
+
         # TF
         self.broadcaster_ = tf.TransformBroadcaster()
         self.listener_ = tf.TransformListener()
@@ -54,7 +47,8 @@ class URDriver():
         self.driver_status_publisher = rospy.Publisher('/ur_robot/driver_status',String)
         self.robot_state_publisher = rospy.Publisher('/ur_robot/robot_state',String)
         self.joint_state_publisher = rospy.Publisher('joint_states',JointState)
-        self.desired_joint_state_subscriber = rospy.Subscriber('joint_trajectory_real', JointState,callback)
+        self.desired_joint_state_subscriber = rospy.Subscriber('joint_trajectory_real', JointState, self.callback)
+        #self.desired_joint_state_subscriber = rospy.Subscriber('joint_trajectory_real', JointState, self.callback, queue_size = 1)
 
         ### Set Up Robot ###
         #self.rob = urx.Robot("192.168.1.155", logLevel=logging.INFO)
@@ -77,12 +71,34 @@ class URDriver():
             self.check_driver_status()
             self.check_robot_state()
             self.publish_status()
+            self.dynamic_check()
             rospy.spin()
             rospy.sleep(.01)
+
   
         # Finish
         rospy.logwarn('SIMPLE UR - ROBOT INTERFACE CLOSING')
         self.rob.shutdown()
+
+    def dynamic_callback(self, config, level):
+        rospy.loginfo("Config set to: {UR5_Enabled}".format(**config))
+        self.UR5_Enabled = config["UR5_Enabled"]
+        return config
+
+    def callback(self,data):
+        if self.driver_status == 'SERVO':
+            a = 0.1
+            v = 0.07
+            pose[0] = data.positon[0]
+            pose[1] = data.positon[1]
+            pose[2] = data.positon[2]
+            pose[3] = data.positon[3]
+            pose[4] = data.positon[4]
+            pose[5] = data.positon[5]
+            self.rob.movej(pose,acc=a,vel=v,wait=False)
+            self.service_disable()
+        else:
+            rospy.logwarn('SIMPLE UR -- cannot servo, UR5 is not enabled')
 
     def update(self):
         if not self.driver_status == 'DISCONNECTED':
@@ -112,6 +128,13 @@ class URDriver():
             self.current_tcp_frame = T
             self.broadcaster_.sendTransform(tuple(T.p),tuple(T.M.GetQuaternion()),rospy.Time.now(), '/endpoint','/base_link')
 
+    def dynamic_check(self):
+        if not self.prev_state == self.UR5_Enabled:
+            if self.UR5_Enabled == True:
+                self.servo_enable()
+            else:
+                self.service_disable()
+            self.prev_state = self.UR5_Enabled
 
     def check_driver_status(self):
         if self.driver_status == 'DISCONNECTED':
