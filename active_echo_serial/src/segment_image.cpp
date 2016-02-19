@@ -17,8 +17,9 @@ static bool g_mid_plane = true;
 static bool move_forward = true; 
 static int step = 1;              // Step length along x-axis
 static int step_scaler = 1;
+static int count = 0;
 
-void dynamiconfigCallback(dynamic_reconfig::segment_imageConfig &config, uint32_t level)
+void dynamiconfigCallback( dynamic_reconfig::segment_imageConfig &config, uint32_t level)
 {
 	g_mid_plane = config.In_Plane_Assumption;
 	move_forward = config.Move_Forward;
@@ -32,7 +33,7 @@ void dynamiconfigCallback(dynamic_reconfig::segment_imageConfig &config, uint32_
 }
 
 
-void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
+void segmentCallback( const active_echo_serial::Num::ConstPtr& msg)
 {
 	static tf::TransformBroadcaster br;
 
@@ -85,21 +86,22 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 			// This will result in the change of moving direction of the robot arm 
 			if ( move_forward == false ) {  direction = -1;  }
 			if (msg->tc < t_s) {
-			  if ( fabs(y) > 0.003 ) {x = (2*direction*(t_s - msg->tc)*step)/(step_scaler*10000);}
-			  else {x = (direction*(t_s - msg->tc)*step)/(step_scaler*10000);} // m 
+				if ( fabs(y) > 0.003 ) {x = (2*direction*(t_s - msg->tc)*step)/(step_scaler*10000);}
+				else {x = (direction*(t_s - msg->tc)*step)/(step_scaler*10000);} // m 
 				// x = direction*step*0.001; // m 
 			}
 			// x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
 		}
-	
-		if ( !isnan(x) ) {std::cout << "Prepare to throw" << std::endl; throw false;}
-	
+
+		if ( isnan(x) ) {std::cout << "Prepare to throw" << std::endl; throw false;}
+
 	}
 	catch (bool fail) { 
 		std::cout << "Rostopic /active_echo_data is not published, or tc is nonpositive." << std::endl;
 		broadcast = false;
 	}
-	
+
+
 	// Filter out outliers of /segment_point
 	if ( abs(msg->dly) < 2600 && msg->tc > 0  && broadcast == true ) {
 
@@ -108,7 +110,7 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 		std::cout << "Value of y is " << y << std::endl;
 		q.setRPY(0, 0, 0);
 		transform.setRotation(q);
-                std::cout << "Preparing to broadcast the transform" << std::endl;
+		std::cout << "Preparing to broadcast the transform" << std::endl;
 		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),"ultrasound_sensor", "segment_point"));
 
 	}
@@ -123,7 +125,8 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 	// Test whehter dynamic reconfigure changes the value of mid_plane
 	std::cout << "Value of In_Plane_Assumption is " << std::boolalpha << g_mid_plane  << std::endl;
 	std::cout << "Value of Move_Forward is "        << std::boolalpha << move_forward << std::endl;
-
+	std::cout << count << std::endl;
+	count++;
 	// Spherical ultrasound probe
 	//    int offset = -290;
 
@@ -138,7 +141,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "segment_image");
 	ros::NodeHandle n;
-	
+
 	int rate = 10*step_scaler;
 	ros::Rate r(rate); // Hz
 
@@ -150,22 +153,12 @@ int main(int argc, char **argv)
 	f = boost::bind(&dynamiconfigCallback, _1, _2);
 	server.setCallback(f);
 
-	//Josh added this for future implementation, apparently it was never pushed
-	while ( ros::ok() ) {
+	 while (ros::ok()){
+		ros::spinOnce();
 
-	
-	/*	//Alternate method after to implement after we determine the appropriate scaling time
-	ros::Timer timer1 = n.createTimer(ros::Duration(1.0), dynamiconfigCallback);
-	ros::Timer timer2 = n.createTimer(ros::Duration(0.1), segmentCallback);
-	ros::spin();
-	return 0;
-	*/
-
-
-	  ros::spinOnce();
-	
-	  r.sleep();
-	}
+		r.sleep();
+	} 
+//	ros::spin();
 
 	return 0;
 }
