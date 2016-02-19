@@ -62,7 +62,7 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 
 	try {
 
-		y = ceil(msg->l_ta - 64.5)*element_w/1000;
+		y = ceil(msg->l_ta - 64.5)*element_w/1000; // Unit:m
 		z = -(msg->dly)*(1/AE_SRate)*SOS; // Unit:m
 		if (g_mid_plane == true) {
 
@@ -85,20 +85,15 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 			// This will result in the change of moving direction of the robot arm 
 			if ( move_forward == false ) {  direction = -1;  }
 			if (msg->tc < t_s) {
-				if ( fabs(y) > 0.003 ) {x = 2*direction*(t_s - msg->tc)/5*step/2/step_scaler*0.001;}
-				else {x = direction*(t_s - msg->tc)/5*step/2/step_scaler*0.001;} // m 
+			  if ( fabs(y) > 0.003 ) {x = (2*direction*(t_s - msg->tc)*step)/(step_scaler*10000);}
+			  else {x = (direction*(t_s - msg->tc)*step)/(step_scaler*10000);} // m 
 				// x = direction*step*0.001; // m 
 			}
 			// x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
 		}
-		// y = ( msg->l_ta - 64.5)*element_w/1000; // Unit:m
-		
-
-
-		if ( !isnan(x) ) {
-
-		}
-		else { std::cout << "Prepare to throw" << std::endl; throw false; }
+	
+		if ( !isnan(x) ) {std::cout << "Prepare to throw" << std::endl; throw false;}
+	
 	}
 	catch (bool fail) { 
 		std::cout << "Rostopic /active_echo_data is not published, or tc is nonpositive." << std::endl;
@@ -117,13 +112,13 @@ void segmentCallback(const active_echo_serial::Num::ConstPtr& msg)
 		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),"ultrasound_sensor", "segment_point"));
 
 	}
-	else if (abs(msg->dly) > 3000 && broadcast == true && msg->tc > 30 ) {
+	else if ( abs(msg->dly) > 3000 && msg->tc > 30 && broadcast == true ) {
 		transform.setOrigin (tf::Vector3(0.001,y,z));
 		q.setRPY(0,0,0);
 		transform.setRotation(q);
 		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "ultrasound_sensor", "segment_point"));
 	}
-	else {	std::cout << "Broadcast to /segment_point failed "; }
+	else {std::cout << "Broadcast to /segment_point failed "; }
 
 	// Test whehter dynamic reconfigure changes the value of mid_plane
 	std::cout << "Value of In_Plane_Assumption is " << std::boolalpha << g_mid_plane  << std::endl;
@@ -154,7 +149,19 @@ int main(int argc, char **argv)
 
 	f = boost::bind(&dynamiconfigCallback, _1, _2);
 	server.setCallback(f);
+
+	//Josh added this for future implementation, apparently it was never pushed
 	while ( ros::ok() ) {
+
+	
+	/*	//Alternate method after to implement after we determine the appropriate scaling time
+	ros::Timer timer1 = n.createTimer(ros::Duration(1.0), dynamiconfigCallback);
+	ros::Timer timer2 = n.createTimer(ros::Duration(0.1), segmentCallback);
+	ros::spin();
+	return 0;
+	*/
+
+
 	  ros::spinOnce();
 	
 	  r.sleep();

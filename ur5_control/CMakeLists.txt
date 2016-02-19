@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   robot_state_publisher
   roscpp
+  rospy
   sensor_msgs
   trajectory_msgs
   control_msgs

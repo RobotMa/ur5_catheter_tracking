@@ -16,6 +16,7 @@ generate_dynamic_reconfigure_options(
   cfg/ultrasound_ur5.cfg
   cfg/segment_image.cfg
   cfg/segment_pose_publisher.cfg
+  cfg/ur_driver.cfg
 )
 
 ## Uncomment this if the package has a setup.py. This macro ensures
