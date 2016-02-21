@@ -72,7 +72,7 @@ class URDriver():
         while not rospy.is_shutdown():
             self.update()
             self.check_driver_status()
-            # self.check_robot_state() # problematic now
+            self.check_robot_state() # problematic now
             self.publish_status()
             self.dynamic_check()
             # rospy.spin() 
