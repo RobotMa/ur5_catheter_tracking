@@ -16,12 +16,13 @@
 #include <dynamic_reconfigure/server.h>
 #include <dynamic_reconfig/segment_pose_publisherConfig.h>
 
-// This node uses the pose of /segment_point to calculate the new desired pose
+// This "active_echo_serial" node uses the pose of /segment_point to calculate the next desired pose
 // of /ee_link 
 
-// Track the segmented point
+// Tracking the segmented point is set to false
 static bool g_track = false;
 
+// Dynamic reconfigure to enable/disable tracking mode
 void dynamiconfigCallback(dynamic_reconfig::segment_pose_publisherConfig &config, uint32_t level)
 {
 	g_track = config.Enable_Tracking;
@@ -41,7 +42,7 @@ int main(int argc, char **argv)
 	tf::TransformListener listener_4;
 	tf::TransformListener listener_5;
 
-	// Dynamic reconfigure callback 
+	// Dynamic reconfigure callback to update g_track 
 	dynamic_reconfigure::Server<dynamic_reconfig::segment_pose_publisherConfig> server;
 	dynamic_reconfigure::Server<dynamic_reconfig::segment_pose_publisherConfig>::CallbackType f;
 
@@ -49,7 +50,9 @@ int main(int argc, char **argv)
 	server.setCallback(f);
 
 	ros::Rate r(10); // 10 Hz
-	// bool pub = true; // Publish to setpose if a valid des_pose is obtained 
+			 // The publishing rate should be high enough to achieve almost real-time
+			 // performance, and low enough so as not to cause jammed data for other
+			 // subscribers. To be further tuned.
 
 	while ( ros::ok() ){
 
@@ -103,54 +106,16 @@ int main(int argc, char **argv)
 
 			H1.setOrigin(   transform_bu.getOrigin() );
                         H1.setRotation( transform_bu.getRotation() );
-                        H2.setOrigin(   transform_bs.getOrigin() );
-                        H2.setRotation( transform_bs.getRotation() );
-                        H3.setOrigin(   transform_be_old.getOrigin() );
-                        H3.setRotation( transform_be_old.getRotation() );
-                        H4.setOrigin(   transform_be.getOrigin() );
-                        H4.setRotation( transform_be.getRotation() );
-			H5.setOrigin(   transform_su.getOrigin() );
-                        H5.setRotation( transform_su.getRotation() );
 
 			Eigen::Affine3d HA_1;
                         tf::poseTFToEigen( H1, HA_1 );
                         Eigen::Matrix4d Hd_1 = HA_1.matrix();
                         Eigen::MatrixXf Hf_1 = Hd_1.cast <float> ();
 
-			Eigen::Affine3d HA_2;
-                        tf::poseTFToEigen( H2, HA_2 );
-                        Eigen::Matrix4d Hd_2 = HA_2.matrix();
-                        Eigen::MatrixXf Hf_2 = Hd_2.cast <float> ();
-
-			Eigen::Affine3d HA_3;
-                        tf::poseTFToEigen( H3, HA_3 );
-                        Eigen::Matrix4d Hd_3 = HA_3.matrix();
-                        Eigen::MatrixXf Hf_3 = Hd_3.cast <float> ();
-
-			Eigen::Affine3d HA_4;
-                        tf::poseTFToEigen( H4, HA_4 );
-                        Eigen::Matrix4d Hd_4 = HA_4.matrix();
-                        Eigen::MatrixXf Hf_4 = Hd_4.cast <float> ();
-
-			Eigen::Affine3d HA_5;
-                        tf::poseTFToEigen( H5, HA_5 );
-                        Eigen::Matrix4d Hd_5 = HA_5.matrix();
-                        Eigen::MatrixXf Hf_5 = Hd_5.cast <float> ();
-
-
 			std::cout << " Pose of bu is" << std::endl;
 			std::cout << Hf_1 << std::endl;
-			std::cout << " Pose of bs is" << std::endl; 
-			std::cout << Hf_2 << std::endl;
-			std::cout << " Pose of H3 is" << std::endl;
-			std::cout << Hf_3 << std::endl;
-			std::cout << " Pose of H4 is" << std::endl;
-			std::cout << Hf_4 << std::endl;
-			std::cout << " Pose of su is" << std::endl;
-			std::cout << Hf_5 << std::endl;
-			std::cout << " Pose of H3 - H4 is" << std::endl;
-			std::cout << Hf_3 - Hf_4 << std::endl;
 			*/
+
 			if (g_track == true) {
 
 				// Convert tf::Transform to geometry_msgs::Pose for publishing

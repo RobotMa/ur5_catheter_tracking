@@ -114,11 +114,13 @@ include_directories(
 add_executable(active_echo_serial src/active_echo_serial.cpp)
 add_executable(segment_image src/segment_image.cpp)
 add_executable(segment_pose_publisher src/segment_pose_publisher.cpp)
+add_executable(active_echo_localization src/active_echo_localization.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(active_echo_serial active_echo_serial_generate_messages_cpp)
 add_dependencies(segment_image active_echo_serial_generate_messages_cpp)
+add_dependencies(active_echo_localization active_echo_serial_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(active_echo_serial
@@ -128,6 +130,9 @@ target_link_libraries(segment_image
   ${catkin_LIBRARIES}
 )
 target_link_libraries(segment_pose_publisher
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(active_echo_localization
   ${catkin_LIBRARIES}
 )
 

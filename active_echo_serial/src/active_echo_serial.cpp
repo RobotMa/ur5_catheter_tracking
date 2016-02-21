@@ -272,12 +272,8 @@ int main(int argc, char **argv)
 				std::string  l_ta = full_info.substr(18,6);
 				std::string   dly = full_info.substr(29,6);
 				std::string    tc = full_info.substr(39,6);
-				// std::cout << l_all << std::endl;
-				// std::cout <<  l_ta << std::endl;
-				// std::cout <<   dly << std::endl;
-				// std::cout <<    tc << std::endl;
 
-				std::string::size_type sz; // alias of size_t
+				// std::string::size_type sz; // alias of size_t
 
 				// Convert string numbers to integers
 				int l_all_v = atoi(l_all.c_str());

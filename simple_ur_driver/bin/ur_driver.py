@@ -45,9 +45,9 @@ class URDriver():
         self.set_stop_service = rospy.Service('simple_ur_msgs/SetStop', SetStop, self.set_stop_call)
         self.set_servo_mode_service = rospy.Service('simple_ur_msgs/SetServoMode', SetServoMode, self.set_servo_mode_call)
         # PUBLISHERS AND SUBSCRIBERS
-        self.driver_status_publisher = rospy.Publisher('/ur_robot/driver_status',String, queue_size = 5)
-        self.robot_state_publisher = rospy.Publisher('/ur_robot/robot_state',String,queue_size = 5 )
-        self.joint_state_publisher = rospy.Publisher('joint_states',JointState, queue_size = 5)
+        self.driver_status_publisher = rospy.Publisher('/ur_robot/driver_status', String, queue_size = 5)
+        self.robot_state_publisher = rospy.Publisher('/ur_robot/robot_state', String, queue_size = 5 )
+        self.joint_state_publisher = rospy.Publisher('joint_states', JointState, queue_size = 5)
         self.desired_joint_state_subscriber = rospy.Subscriber('joint_trajectory_real', JointState, self.callback)
         #self.desired_joint_state_subscriber = rospy.Subscriber('joint_trajectory_real', JointState, self.callback, queue_size = 1)
 
@@ -94,13 +94,6 @@ class URDriver():
         if self.driver_status == 'SERVO':
             a = 5 # 0.1
             v = 2 # 0.07
-            # pose = []
-            # pose[0] = data.position[0]
-            # pose[1] = data.position[1]
-            # pose[2] = data.position[2]
-            # pose[3] = data.position[3]
-            # pose[4] = data.position[4]
-            # pose[5] = data.position[5]
             self.rob.movej(data.position,acc=a,vel=v,wait=False)
         else:
             rospy.logwarn('SIMPLE UR -- cannot servo, UR5 is not enabled')
