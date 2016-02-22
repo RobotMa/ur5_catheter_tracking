@@ -64,7 +64,7 @@ void localizeCallback( const active_echo_serial::Num::ConstPtr& msg)
 	double delta_x = 0.0; // Unit:m
 
 	const int t_s = 25; // counter threshold
-	const double changeLowerBound = 0.05; // %
+	const double changeLowerBound = 0.02; // %
 	const double changeUpperBound = 0.3;  // % 
 
 	// Calculated the estimated position of AE element in the US frame
@@ -72,11 +72,18 @@ void localizeCallback( const active_echo_serial::Num::ConstPtr& msg)
 
 		y = ceil(msg->l_ta - 64.5)*element_w/1000; // Unit:m
 		z = -(msg->dly)*(1/AE_SRate)*SOS; // Unit:m
-		
-		cntNum_cur = msg->tc;
-		cntNum_pre = cntNum_cur;
 
-		if (cntNum_pre != 0) { delta_x = ( cntNum_cur - cntNum_pre )/ cntNum_pre; }
+		cntNum_pre = cntNum_cur;
+		cntNum_cur = msg->tc;
+		
+		std::cout << "\n==================\n";
+		std::cout << "cntNum_pre is " << cntNum_pre << std::endl;
+		std::cout << "cntNum_cur is "  << cntNum_cur << std::endl;
+
+		if (cntNum_pre != 0) { 
+			delta_x = ( cntNum_cur - cntNum_pre )/ cntNum_pre; 
+			std::cout << "Value of delta_x is " << delta_x <<  std::endl;
+		}
 
 		if ( fabs(delta_x) < changeLowerBound ) {
 
@@ -91,7 +98,8 @@ void localizeCallback( const active_echo_serial::Num::ConstPtr& msg)
 			x = delta_x*detect_range*step;
 		}
 
-		// if ( isnan(x) ) {std::cout << "Prepare to throw" << std::endl; throw false;}
+		std::cout << "x of segmented AE element as in the US frame is " << x << std::endl;
+
 
 	}
 	catch (bool fail) { 
