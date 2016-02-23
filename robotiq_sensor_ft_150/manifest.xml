@@ -1,6 +1,0 @@
-<package>
-  <description brief="Robotiq_Sensor_FT_150">Robotiq_Sensor_FT_150</description>
-  <depend package="gazebo" />
-  <author>me</author>
-  <license>BSD</license>
-</package>
