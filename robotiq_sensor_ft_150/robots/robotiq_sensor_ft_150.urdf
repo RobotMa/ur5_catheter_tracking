@@ -1,5 +1,5 @@
 <robot
-  name="Robotiq_Sensor_FT_150">
+  name="robotiq_sensor_ft_150">
   <link
     name="base_link">
     <inertial>
@@ -22,7 +22,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://Robotiq_Sensor_FT_150/meshes/base_link.STL" />
+          filename="package://robotiq_sensor_ft_150/meshes/base_link.STL" />
       </geometry>
       <material
         name="">
@@ -36,7 +36,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://Robotiq_Sensor_FT_150/meshes/base_link.STL" />
+          filename="package://robotiq_sensor_ft_150/meshes/base_link.STL" />
       </geometry>
     </collision>
   </link>

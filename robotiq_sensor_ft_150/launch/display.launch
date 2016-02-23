@@ -1,26 +1,14 @@
 <launch>
-  <arg
-    name="model" />
-  <arg
-    name="gui"
-    default="False" />
-  <param
-    name="robot_description"
-    textfile="$(find Robotiq_Sensor_FT_150)/robots/Robotiq_Sensor_FT_150.URDF" />
-  <param
-    name="use_gui"
-    value="$(arg gui)" />
-  <node
-    name="joint_state_publisher"
-    pkg="joint_state_publisher"
-    type="joint_state_publisher" />
-  <node
-    name="robot_state_publisher"
-    pkg="robot_state_publisher"
-    type="state_publisher" />
-  <node
-    name="rviz"
-    pkg="rviz"
-    type="rviz"
-    args="-d $(find Robotiq_Sensor_FT_150)/urdf.rviz" />
+
+  <arg name="model" />
+  <arg name="gui" default="False" />
+
+  <param name="robot_description" textfile="$(find robotiq_sensor_ft_150)/robots/robotiq_sensor_ft_150.urdf" />
+  <param name="use_gui" value="$(arg gui)" />
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robotiq_sensor_ft_150)/urdf.rviz" required="true" />
+
+  <node name="world_robot_base_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /world /base_link 100"/>
 </launch>
