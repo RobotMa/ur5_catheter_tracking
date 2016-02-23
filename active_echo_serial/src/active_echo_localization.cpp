@@ -56,8 +56,9 @@ void localizeCallback( const active_echo_serial::Num::ConstPtr& msg)
 	// Detection range along x-axis
 	const double detect_range = 0.02; // Unit:m
 
-	// Store previous and current cntNum (counter number)
+	// Store previous and current cntNum (count number)
 	static int cntNum_pre = 0;
+	static int cntNum_mid = 0; // buffer one more count number
 	static int cntNum_cur = 0;
 	
 	// Step size along x axis
@@ -73,7 +74,8 @@ void localizeCallback( const active_echo_serial::Num::ConstPtr& msg)
 		y = ceil(msg->l_ta - 64.5)*element_w/1000; // Unit:m
 		z = -(msg->dly)*(1/AE_SRate)*SOS; // Unit:m
 
-		cntNum_pre = cntNum_cur;
+		cntNum_pre = cntNum_mid;
+		cntNum_mid = cntNum_cur;
 		cntNum_cur = msg->tc;
 		
 		std::cout << "\n==================\n";
@@ -81,7 +83,7 @@ void localizeCallback( const active_echo_serial::Num::ConstPtr& msg)
 		std::cout << "cntNum_cur is "  << cntNum_cur << std::endl;
 
 		if (cntNum_pre != 0) { 
-			delta_x = ( cntNum_cur - cntNum_pre )/ cntNum_pre; 
+			delta_x = ( cntNum_cur - cntNum_pre )/(double) cntNum_pre; 
 			std::cout << "Value of delta_x is " << delta_x <<  std::endl;
 		}
 

@@ -13,8 +13,8 @@ The current packages are compatible with ROS Hydro/Indigo. Compatibility with ot
 
 For ROS Indigo users, you will want to first install UR5 dependent packages from ROS-Industrial `sudo apt-get install ros-indigo-ur-driver ros-indigo-ur-bringup ros-indigo-ur-kinematics ros-indigo-ur-msgs ros-indigo-ur-gazebo ros-indigo-ur-description`.
 
-Currently, force feedback is being incorporated into the system and FT150 force torque sensor from Robotiq company is used. One needs to install the rototiq metapackage by "git clone https://github.com/ros-industrial/robotiq.git
-" in your local repository. The EtherCAT soem library is required to build the Robotiq package 'sudo apt-get install ros-indigo-soem'. 
+Currently, force feedback is being incorporated into the system and FT150 force torque sensor from Robotiq company is used. One needs to install the rototiq metapackage by 'git clone https://github.com/ros-industrial/robotiq.git
+' in your local repository. The EtherCAT soem library is required to build the Robotiq package 'sudo apt-get install ros-indigo-soem'. 
 
 
 ## Simulation Mode
