@@ -1,6 +1,0 @@
-<package>
-  <description brief="robotiq_sensor_ft_150">robotiq_sensor_ft_150</description>
-  <depend package="gazebo" />
-  <author>Qianli Ma</author>
-  <license>BSD</license>
-</package>

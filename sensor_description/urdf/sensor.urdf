@@ -32,4 +32,3 @@
   <!-- value="true" if spawned individually; 
        value="false" if spawned as the eef of ur5 -->
 </robot>
-

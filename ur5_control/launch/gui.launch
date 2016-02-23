@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="model" default="$(find ur5_control)/urdf/ur5_robot.urdf" />
-  <param name="robot_description" textfile="$(arg model)" />
+	<arg name="model" default="$(find ur5_control)/urdf/ur5_robot.urdf" />
+	<param name="robot_description" textfile="$(arg model)" />
 
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
-    <param name="use_gui" value="true"/>
-  </node>
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ur5_control)/assignment1.rviz" />
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+		<param name="use_gui" value="true"/>
+	</node>
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find ur5_control)/assignment1.rviz" />
 </launch>
