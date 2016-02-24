@@ -225,6 +225,12 @@
 		  <origin rpy="0 0 0" xyz="-0.01 0 0"/>
 	  </collision>
   </link>
+  <joint name="force_sensor_ee_joint" type="fixed">
+	  <parent link="ee_link"/>
+	  <child link="robotiq_sensor_ft_150"/>
+	  <!-- 50 mm is the height of the robotiq force sensor -->
+	  <origin rpy="0.0 1.5708 0.0" xyz="0.0495 0.0 0.0"/>
+  </joint>
 
   <link name="robotiq_sensor_ft_150">
 	  <inertial>
@@ -256,43 +262,53 @@
 		  </geometry>
 	  </collision>
   </link>
-  <joint name="force_sensor_ee_joint" type="fixed">
-	  <parent link="ee_link"/>
-	  <child link="robotiq_sensor_ft_150"/>
-	  <!-- 50 mm is the height of the robotiq force sensor -->
-	  <origin rpy="0.0 1.5708 0.0" xyz="0.0495 0.0 0.0"/>
-  </joint>
 
-<link name="connector">
-<inertial>
-<origin
-xyz="1.269E-18 -0.0079375 4.86015646673256E-19"
-rpy="0 0 0" />
-<mass value="0.05597" />
-<inertia
-ixx="1.68784449251922E-05"
-ixy="0"
-ixz="4.59177480789956E-38"
-iyy="1.03347254490157E-21"
-iyz="-3.14060153878525E-05"
-izz="1.92300029961038E-21" />
-</inertial>
-<visual>
-<origin xyz="1.5707963267949 0 0" rpy="0 0 0" />
-<geometry>
-<mesh filename="package://connector/meshes/connector.STL" />
-</geometry>
-<material name="">
-<color rgba="0.79216 0.81961 0.93333 1" />
-</material>
-</visual>
-<collision>
-<origin xyz="0 0 0" rpy="1.5707963267949 0 0" />
-<geometry>
-<mesh filename="package://connector/meshes/connector.STL" />
-</geometry>
-</collision>
-</link>
+  <joint name="connector_force_sensor_joint" type="fixed">
+	  <parent link="robotiq_sensor_ft_150"/>
+	  <child link="connector"/>
+
+	  <origin rpy="0.0  0.0 0.0" xyz="0.0 0.0 0.0"/>
+  </joint>
+  <link name="connector">
+	  <inertial>
+		  <!--origin
+			  xyz="1.269E-18 -0.0079375 4.86015646673256E-19"
+			  rpy="0 0 0" /-->
+		  <mass value="0.05597" />
+		  <inertia
+			  ixx="1.68784449251922E-05"
+			  ixy="0"
+			  ixz="0.0"
+			  iyy="0.0"
+			  iyz="-3.14060153878525E-05"
+			  izz="0.0" />
+	  </inertial>
+	  <visual>
+		  <origin xyz="0 0 0" rpy="0 0 0" />
+		  <geometry>
+			  <mesh filename="package://connector_description/meshes/connector.STL" />
+		  </geometry>
+		  <material name="">
+			  <color rgba="0.4 0.4 0.4 1" />
+		  </material>
+	  </visual>
+	  <collision>
+		  <origin xyz="0 0 0" rpy="0 0 0" />
+		  <geometry>
+			  <mesh filename="package://connector_description/meshes/connector.STL" />
+		  </geometry>
+	  </collision>
+  </link>
+
+  <joint name="sensor_ee_joint" type="fixed">
+	  <parent link="connector"/>
+	  <child link="ultrasound_sensor"/>
+
+	  <!-- x is obtained by trial and error in rviz via naked eye checking -->
+	  <!-- origin rpy="0.0 -1.57 0.0" xyz="0.14751 0.0 0.0"/-->
+	  <!-- origin rpy="0.0 -1.57 0.0" xyz="0.184751 0.0 0.0"/-->
+	  <origin rpy="3.1415926 0.0 0.0" xyz="0.0 0.0 0.200620"/> <!--Distance between the UR frame and connector -->
+  </joint>
 
   <link name="ultrasound_sensor">
 	  <inertial>
@@ -320,15 +336,7 @@ izz="1.92300029961038E-21" />
 	    </geometry>
     </collision>
   </link>
-  <joint name="sensor_ee_joint" type="fixed">
-	  <parent link="robotiq_sensor_ft_150"/>
-	  <child link="ultrasound_sensor"/>
 
-	  <!-- x is obtained by trial and error in rviz via naked eye checking -->
-	  <!-- origin rpy="0.0 -1.57 0.0" xyz="0.14751 0.0 0.0"/-->
-	  <!-- origin rpy="0.0 -1.57 0.0" xyz="0.184751 0.0 0.0"/-->
-	  <origin rpy="3.1415926 0.0 0.0" xyz="0.0 0.0 0.184751"/>
-  </joint>
   <transmission name="shoulder_pan_trans">
 	  <type>transmission_interface/SimpleTransmission</type>
 	  <joint name="shoulder_pan_joint"/>
@@ -377,6 +385,7 @@ izz="1.92300029961038E-21" />
 		  <mechanicalReduction>1</mechanicalReduction>
 	  </actuator>
   </transmission>
+
   <link name="world"/>
   <joint name="world_joint" type="fixed">
 	  <parent link="world"/>
