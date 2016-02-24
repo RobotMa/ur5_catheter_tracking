@@ -229,6 +229,7 @@
   <link name="robotiq_sensor_ft_150">
 	  <inertial>
 		  <!--origin xyz="0.00488219806659017 -0.0231670070644895 -0.000115077525975578" rpy="0 0 0" /-->
+		  <origin xyz="0.0 0.0 0.0" rpy="0 0 0 "/>
 		  <mass value="0.401516952346595" />
 		  <inertia
 			  ixx="0.000444366413738052"
@@ -244,7 +245,8 @@
 			  <mesh filename="package://robotiq_sensor_ft_150/meshes/base_link.STL" />
 		  </geometry>
 		  <material name="">
-			  <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+			  <!--color rgba="0.3 0.3 0.3 1" /--> <!--grey -->
+			  <color rgba="0.39 0.58 0.99 1"/>
 		  </material>
 	  </visual>
 	  <collision>
@@ -254,11 +256,11 @@
 		  </geometry>
 	  </collision>
   </link>
- <joint name="force_sensor_ee_joint" type="fixed">
+  <joint name="force_sensor_ee_joint" type="fixed">
 	  <parent link="ee_link"/>
 	  <child link="robotiq_sensor_ft_150"/>
-	  <!-- rpy and xyz to be adjusted -->
-	  <origin rpy="0.0 -1.57 0.0" xyz="0.184751 0.0 0.0"/>
+	  <!-- 50 mm is the height of the robotiq force sensor -->
+	  <origin rpy="0.0 1.5708 0.0" xyz="0.0495 0.0 0.0"/>
   </joint>
 
   <link name="ultrasound_sensor">
@@ -293,7 +295,8 @@
 
 	  <!-- x is obtained by trial and error in rviz via naked eye checking -->
 	  <!-- origin rpy="0.0 -1.57 0.0" xyz="0.14751 0.0 0.0"/-->
-	  <origin rpy="0.0 -1.57 0.0" xyz="0.184751 0.0 0.0"/>
+	  <!-- origin rpy="0.0 -1.57 0.0" xyz="0.184751 0.0 0.0"/-->
+	  <origin rpy="3.1415926 0.0 0.0" xyz="0.0 0.0 0.184751"/>
   </joint>
   <transmission name="shoulder_pan_trans">
 	  <type>transmission_interface/SimpleTransmission</type>
