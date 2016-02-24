@@ -263,6 +263,37 @@
 	  <origin rpy="0.0 1.5708 0.0" xyz="0.0495 0.0 0.0"/>
   </joint>
 
+<link name="connector">
+<inertial>
+<origin
+xyz="1.269E-18 -0.0079375 4.86015646673256E-19"
+rpy="0 0 0" />
+<mass value="0.05597" />
+<inertia
+ixx="1.68784449251922E-05"
+ixy="0"
+ixz="4.59177480789956E-38"
+iyy="1.03347254490157E-21"
+iyz="-3.14060153878525E-05"
+izz="1.92300029961038E-21" />
+</inertial>
+<visual>
+<origin xyz="1.5707963267949 0 0" rpy="0 0 0" />
+<geometry>
+<mesh filename="package://connector/meshes/connector.STL" />
+</geometry>
+<material name="">
+<color rgba="0.79216 0.81961 0.93333 1" />
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="1.5707963267949 0 0" />
+<geometry>
+<mesh filename="package://connector/meshes/connector.STL" />
+</geometry>
+</collision>
+</link>
+
   <link name="ultrasound_sensor">
 	  <inertial>
 		  <!-- <origin
