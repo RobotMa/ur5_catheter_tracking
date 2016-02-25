@@ -54,7 +54,8 @@ class URDriver():
         ### Set Up Robot ###
         #self.rob = urx.Robot("192.168.1.155", logLevel=logging.INFO)
         logging.basicConfig(level = logging.INFO)
-        self.rob = urx.Robot("10.162.43.69")
+        #self.rob = urx.Robot("10.162.43.69")
+        self.rob = urx.Robot("127.0.0.1")
         if not self.rob:
             rospy.logwarn('SIMPLE UR  - ROBOT NOT CONNECTED')
             self.driver_status = 'DISCONNECTED'

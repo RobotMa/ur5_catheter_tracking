@@ -229,7 +229,9 @@
 	  <parent link="ee_link"/>
 	  <child link="robotiq_sensor_ft_150"/>
 	  <!-- 50 mm is the height of the robotiq force sensor -->
-	  <origin rpy="3.1415926 -1.570796325 0.0" xyz="0.0495 0.0 0.0"/>
+	  <!--origin rpy="3.1415926 -1.570796325 0.0" xyz="0.0495 0.0 0.0"/-->
+	  <origin rpy="-1.570796325 0.0 -1.570796325" xyz="0.0495 0.0 0.0"/>
+
   </joint>
 
   <link name="robotiq_sensor_ft_150">
