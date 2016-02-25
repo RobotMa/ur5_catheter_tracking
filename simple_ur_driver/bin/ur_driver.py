@@ -172,7 +172,7 @@ class URDriver():
         self.robot_state_publisher.publish(String(self.robot_state))
 
     def check_robot_state(self):
-        mode = self.rob.get_all_data()['RobotModeData']
+        mode = self.rob.secmon.get_all_data()['RobotModeData']
 
         if not mode['isPowerOnRobot']:
             self.robot_state = 'POWER OFF'

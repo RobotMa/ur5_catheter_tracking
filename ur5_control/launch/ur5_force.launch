@@ -2,7 +2,7 @@
 <launch>
 
 	<!-- Use the the urdf of UR5 with ultrasound sensor attached -->
-	<arg name="model" default="$(find sensor_description)/urdf/ur5_eef.urdf"/>
+	<arg name="model" default="$(find sensor_description)/urdf/ur5_force_eef.urdf"/>
 	<!--arg name="model" default="$(find ur5_control)/urdf/ur5_robot.urdf" /-->
 
 	<param name="robot_description" textfile="$(arg model)" />

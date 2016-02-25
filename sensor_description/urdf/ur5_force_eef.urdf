@@ -229,7 +229,7 @@
 	  <parent link="ee_link"/>
 	  <child link="robotiq_sensor_ft_150"/>
 	  <!-- 50 mm is the height of the robotiq force sensor -->
-	  <origin rpy="0.0 1.5708 0.0" xyz="0.0495 0.0 0.0"/>
+	  <origin rpy="3.1415926 -1.570796325 0.0" xyz="0.0495 0.0 0.0"/>
   </joint>
 
   <link name="robotiq_sensor_ft_150">
@@ -307,7 +307,7 @@
 	  <!-- x is obtained by trial and error in rviz via naked eye checking -->
 	  <!-- origin rpy="0.0 -1.57 0.0" xyz="0.14751 0.0 0.0"/-->
 	  <!-- origin rpy="0.0 -1.57 0.0" xyz="0.184751 0.0 0.0"/-->
-	  <origin rpy="3.1415926 0.0 0.0" xyz="0.0 0.0 0.200620"/> <!--Distance between the UR frame and connector -->
+	  <origin rpy="3.1415926 0.0 1.570796325" xyz="0.0 0.0 0.200620"/> <!--Distance between the UR frame and connector -->
   </joint>
 
   <link name="ultrasound_sensor">
