@@ -38,7 +38,7 @@ void localizeCallback( const active_echo_serial::Num::ConstPtr& msg)
 	tf::Transform transform;
 	tf::Quaternion q;
 
-	double element_w = 0.3; // mm small probe : 3 mm & large probe 4.5 mm
+	double element_w = 0.45; // mm small probe : 3 mm & large probe 4.5 mm
 	double AE_SRate = 80*pow(10, 6); // hz
 	double SOS = 1480; // m/s 
 			   // This will vary depending on the medium (water/phantom)
