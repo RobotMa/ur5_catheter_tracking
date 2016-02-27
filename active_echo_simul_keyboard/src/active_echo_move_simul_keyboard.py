@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import roslib; roslib.load_manifest('active_echo_simul_keyboard')
 import rospy
+import tf
 
 from active_echo_serial.msg import Num 
 
@@ -24,13 +25,14 @@ CTRL-C to quit
 
 moveBindings = {
 
-    'u':  1,
-    'i': -1,
-    'j':  1,
-    'k': -1,
-    'm':  1,
-    ',': -1,
-}
+        'u':  0.001,
+        'i': -0.001,
+        'j':  0.001,
+        'k': -0.001,
+        'm':  0.001,
+        ',': -0.001,
+        'o':  0.000,
+        }
 
 def getKey():
     tty.setraw(sys.stdin.fileno())
@@ -39,52 +41,52 @@ def getKey():
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
     return key
 
-# member vairables of active_echo_data data type
-l_ta = 64
-dly  = 2000
-tc   = 10
+# initial position of the active echo point
+x = 0.4 # m
+y = 0.4 # m
+z = 0.1 # m
 
 # print the three member variables of active_echo_data
-def params(l_ta, dly, tc):
-    return "currently:\tl_ta = %s \tdly = %s \ttc = %s" % (l_ta,dly,tc)
+def params(x, y, z):
+    return "Initial position of the AE elmemnt is:\tx = %s \ty = %s \tz = %s" % (x,y,z)
 
 if __name__=="__main__":
     settings = termios.tcgetattr(sys.stdin)
-
-    pub = rospy.Publisher('active_echo_data', Num, queue_size = 5)
-    rospy.init_node('active_echo_simul_keyboard')
+    # pub = rospy.Publisher('active_echo_data', Num, queue_size = 5)
+    rospy.init_node('active_echo_signal_simul_keyboard')
+    br = tf.TransformBroadcaster()
 
     try:
-        print msg
-        print params(l_ta, dly, tc)
+        print params(x, y, z)
         while(1):
             
             key = getKey()
             if key in moveBindings.keys():
                 if key == 'u' or key == 'i':
-                    l_ta = l_ta + moveBindings[key]
+                    x = x + moveBindings[key]
                 elif key == 'j' or key == 'k':
-                    dly   = dly  + moveBindings[key]
+                    y = y + moveBindings[key]
                 elif key == 'm' or key == ',':
-                    tc   = tc   + moveBindings[key]
+                    z = z + moveBindings[key]
+                elif key == 'o':
+                    print "AE element static"
                 else:
                     print 'Not valid key stroke'
             else:
-                # l_ta = 0
-                # dly  = 0
-                # tc   = 0
                 if (key == '\x03'):
                     break
-            ae_signal = Num()
-            ae_signal.l_ta = l_ta; ae_signal.dly = dly; ae_signal.tc = tc 
-            pub.publish(ae_signal)
-
+            br.sendTransform((x,y,z), 
+                    tf.transformations.quaternion_from_euler(0,0,0),
+                    rospy.Time.now(),
+                    "active_echo_position",
+                    "world")
     except:
         print 'Unexpected error in try'
 
     finally:
-        ae_signal = Num()
-        ae_signal.l_ta = l_ta; ae_signal.dly = dly; ae_signal.tc = tc
-        pub.publish(ae_signal)
-
+        br.sendTransform((x,y,z), 
+                tf.transformations.quaternion_from_euler(0,0,0),
+                rospy.Time.now(),
+                "active_echo_position",
+                "world")
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)

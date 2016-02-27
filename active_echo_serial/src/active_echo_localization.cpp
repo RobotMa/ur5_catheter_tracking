@@ -54,6 +54,10 @@ void localizeCallback( const active_echo_serial::Num::ConstPtr& msg)
 	double z = 0.0; // Unit:m
 
 	// Detection range along x-axis
+	// The detection range along x-axis can vary from 8 mm to 1.x cm,
+	// which highly depends on the medium, the orientation of the AE,
+	// the position of the sensitivity nub and the type of ultrasound
+	// that is used. 
 	const double detect_range = 0.02; // Unit:m
 
 	// Store previous and current cntNum (count number)

@@ -45,7 +45,7 @@ void segmentCallback( const active_echo_serial::Num::ConstPtr& msg)
 	double element_w = 0.3; // mm small probe : 3 mm & large probe 4.5 mm
 	double AE_SRate = 80*pow(10, 6); // hz
 	double SOS = 1480; // m/s
-	 bool broadcast = true;
+	bool broadcast = true;
 
 	// Linear ultrasound probe
 	// Note: x and y are flipped so that the reference frame of the probe

@@ -5,8 +5,11 @@ project(active_echo_simul_keyboard)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  active_echo_serial
+  roscpp
   rospy
+  tf
+  std_msgs
+  active_echo_serial
 )
 
 ## System dependencies are found with CMake's conventions
@@ -127,16 +130,16 @@ include_directories(
 # add_dependencies(active_echo_simul_keyboard ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(active_echo_simul_keyboard_node src/active_echo_simul_keyboard_node.cpp)
+add_executable(active_echo_move_signal src/active_echo_move_signal.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(active_echo_simul_keyboard_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(active_echo_simul_keyboard_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(active_echo_move_signal
+  ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
