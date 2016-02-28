@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   tf
   std_msgs
+  geometry_msgs
   active_echo_serial
 )
 

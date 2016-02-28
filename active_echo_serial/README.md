@@ -19,7 +19,7 @@ Second, bring up roscore and `rosrun active_echo_serial active_echo_serial`. Not
 
 1. 
  
-2. The sensitivity nub can be used to tune "tc"  
+2. The sensitivity nub can be used to tune "tc". Note that an appropriate position of the sensitivity nub is very important for both the stability and the detection range of the US-AE system. The medium (water/phantom), the probe that is used, and the position of the focus point.    
 
 ## Control Unit
 

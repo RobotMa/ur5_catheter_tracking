@@ -3,6 +3,7 @@ import roslib; roslib.load_manifest('active_echo_simul_keyboard')
 import rospy
 import tf
 
+from geometry_msgs.msg import Point
 from active_echo_serial.msg import Num 
 
 import sys, select, termios, tty
@@ -25,12 +26,12 @@ CTRL-C to quit
 
 moveBindings = {
 
-        'u':  0.001,
-        'i': -0.001,
-        'j':  0.001,
-        'k': -0.001,
-        'm':  0.001,
-        ',': -0.001,
+        'u':  0.0002,
+        'i': -0.0002,
+        'j':  0.0002,
+        'k': -0.0002,
+        'm':  0.0002,
+        ',': -0.0002,
         'o':  0.000,
         }
 
@@ -42,9 +43,10 @@ def getKey():
     return key
 
 # initial position of the active echo point
-x = 0.4 # m
-y = 0.4 # m
-z = 0.1 # m
+x = 0.110 # m
+y = 0.425 # m
+z = 0.048 # m
+count = 0
 
 # print the three member variables of active_echo_data
 def params(x, y, z):
@@ -52,9 +54,10 @@ def params(x, y, z):
 
 if __name__=="__main__":
     settings = termios.tcgetattr(sys.stdin)
-    # pub = rospy.Publisher('active_echo_data', Num, queue_size = 5)
+    
     rospy.init_node('active_echo_signal_simul_keyboard')
-    br = tf.TransformBroadcaster()
+    pub = rospy.Publisher('active_echo_position_topic', Point, queue_size = 5)
+    br = tf.TransformBroadcaster() 
 
     try:
         print params(x, y, z)
@@ -75,6 +78,15 @@ if __name__=="__main__":
             else:
                 if (key == '\x03'):
                     break
+            point = Point()
+            point.x = x
+            point.y = y
+            point.z = z
+
+            count = count + 1
+            print "count is %s" % count
+            pub.publish(point)
+
             br.sendTransform((x,y,z), 
                     tf.transformations.quaternion_from_euler(0,0,0),
                     rospy.Time.now(),
