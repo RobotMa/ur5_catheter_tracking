@@ -20,6 +20,10 @@ static int step_scaler = 1;
 static int count = 0;
 static bool publish = false; // Flag to enable publisher when receiving the subscribed topic
 
+double x = 0.0;
+double y = 0.0;
+double z = 0.0;
+
 void dynamiconfigCallback( dynamic_reconfig::segment_imageConfig &config, uint32_t level)
 {
 	g_mid_plane = config.In_Plane_Assumption;
@@ -52,12 +56,8 @@ void segmentCallback( const active_echo_serial::Num::ConstPtr& msg)
 	// Note: x and y are flipped so that the reference frame of the probe
 	// and the robot based will be parallel to each while at working status
 
-	// Initialize x, y, and z
-	double x = 0.0;
-	double y = 0.0;
-	double z = 0.0;
 
-	// Publish the x of the segmented point ahead of the ultrasound mid-plane
+	// Broadcast the x of the segmented point ahead of the ultrasound mid-plane
 	// if direction = 1; behind the ultrasound mid-plane when direction = -1
 	double direction = 1;
 	const int t_s = 25; // counter threshold
@@ -128,6 +128,8 @@ void segmentCallback( const active_echo_serial::Num::ConstPtr& msg)
 	std::cout << "Value of Move_Forward is "        << std::boolalpha << move_forward << std::endl;
 	std::cout << count << std::endl;
 	count++;
+
+	publish = true;
 	// Spherical ultrasound probe
 	//    int offset = -290;
 
@@ -148,6 +150,11 @@ int main(int argc, char **argv)
 
 	ros::Subscriber sub = n.subscribe("active_echo_data", 5, segmentCallback);
 
+	// publish the pose of the active echo element within the ultrasound sensor frame
+	ros::Publisher pub = n.advertise<geometry_msgs::Pose>("active_echo_pose", 1);
+	
+	geometry_msgs::Pose ae_pose; 
+
 	dynamic_reconfigure::Server<dynamic_reconfig::segment_imageConfig> server;
 	dynamic_reconfigure::Server<dynamic_reconfig::segment_imageConfig>::CallbackType f;
 
@@ -156,6 +163,18 @@ int main(int argc, char **argv)
 
 	 while (ros::ok()){
 
+		if (publish == true){
+			ae_pose.position.x = x;
+		       	ae_pose.position.y = y;
+			ae_pose.position.z = z;
+			ae_pose.orientation.x = 0;
+		       	ae_pose.orientation.y = 0;
+			ae_pose.orientation.z = 0;
+			ae_pose.orientation.w = 1;
+
+			pub.publish(ae_pose);
+			publish = false;
+		}
 		ros::spinOnce();
 		r.sleep();
 	} 

@@ -116,11 +116,15 @@ add_executable(segment_image src/segment_image.cpp)
 add_executable(segment_pose_publisher src/segment_pose_publisher.cpp)
 add_executable(active_echo_localization src/active_echo_localization.cpp)
 
+add_executable(segment_image_new src/segment_image_new.cpp)
+add_executable(segment_pose_publisher_new src/segment_pose_publisher_new.cpp)
+
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(active_echo_serial active_echo_serial_generate_messages_cpp)
 add_dependencies(segment_image active_echo_serial_generate_messages_cpp)
 add_dependencies(active_echo_localization active_echo_serial_generate_messages_cpp)
+add_dependencies(segment_image_new active_echo_serial_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(active_echo_serial
@@ -135,7 +139,12 @@ target_link_libraries(segment_pose_publisher
 target_link_libraries(active_echo_localization
   ${catkin_LIBRARIES}
 )
-
+target_link_libraries(segment_image_new
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(segment_pose_publisher_new
+  ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############
