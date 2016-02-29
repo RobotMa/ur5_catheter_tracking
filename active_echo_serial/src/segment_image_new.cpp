@@ -31,10 +31,10 @@ void dynamiconfigCallback( dynamic_reconfig::segment_imageConfig &config, uint32
 	step = config.Step_Length;
 	step_scaler = config.Step_Scaler; 
 	ROS_INFO("Reconfigure Request: %s %s %i %i", 
-		  config.In_Plane_Assumption?"True":"False",
-		  config.Move_Forward?"True":"False",
-		  config.Step_Length,
-		  config.Step_Scaler);
+			config.In_Plane_Assumption?"True":"False",
+			config.Move_Forward?"True":"False",
+			config.Step_Length,
+			config.Step_Scaler);
 }
 
 
@@ -50,7 +50,7 @@ void segmentCallback( const active_echo_serial::Num::ConstPtr& msg)
 	double element_w = 0.3; // mm small probe : 3 mm & large probe 4.5 mm
 	double AE_SRate = 80*pow(10, 6); // hz
 	double SOS = 1480; // m/s
-	 bool broadcast = true;
+	bool broadcast = true;
 
 	// Linear ultrasound probe
 	// Note: x and y are flipped so that the reference frame of the probe
@@ -60,7 +60,8 @@ void segmentCallback( const active_echo_serial::Num::ConstPtr& msg)
 	// Broadcast the x of the segmented point ahead of the ultrasound mid-plane
 	// if direction = 1; behind the ultrasound mid-plane when direction = -1
 	double direction = 1;
-	const int t_s = 25; // counter threshold
+	const int tc_upper_bound = 38; // counter threshold
+	const int tc_lower_bound = 5;
 
 	try {
 
@@ -81,17 +82,18 @@ void segmentCallback( const active_echo_serial::Num::ConstPtr& msg)
 
 			// Note: This inverse Gaussian solution assumes that the positive solution is taken, which will
 			// result in the robot moving in a single direction 
-			double scale = 5.0;
+			double scale = 1.0;
 
 			// Change the relative direction of the segmented point w.r.t. the mid-plane
 			// This will result in the change of moving direction of the robot arm 
 			if ( move_forward == false ) {  direction = -1;  }
-			if (msg->tc < t_s) {
-				if ( fabs(y) > 0.003 ) {x = (2*direction*(t_s - msg->tc)*step)/(step_scaler*10000);}
-				else {x = (direction*(t_s - msg->tc)*step)/(step_scaler*10000);} // m 
-				// x = direction*step*0.001; // m 
+			if ( msg->tc > tc_lower_bound && msg->tc < tc_upper_bound ) {
+				x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
 			}
-			// x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
+			else if ( msg->tc > 0 && msg->tc < tc_lower_bound ) {
+				x = (2*direction*(tc_upper_bound - msg->tc)*step)/(step_scaler*10000);}
+			else { x = 0.0; } // m 
+
 		}
 
 		if ( isnan(x) ) {std::cout << "Prepare to throw" << std::endl; throw false;}
@@ -152,7 +154,7 @@ int main(int argc, char **argv)
 
 	// publish the pose of the active echo element within the ultrasound sensor frame
 	ros::Publisher pub = n.advertise<geometry_msgs::Pose>("active_echo_pose", 1);
-	
+
 	geometry_msgs::Pose ae_pose; 
 
 	dynamic_reconfigure::Server<dynamic_reconfig::segment_imageConfig> server;
@@ -161,14 +163,14 @@ int main(int argc, char **argv)
 	f = boost::bind(&dynamiconfigCallback, _1, _2);
 	server.setCallback(f);
 
-	 while (ros::ok()){
+	while (ros::ok()){
 
 		if (publish == true){
 			ae_pose.position.x = x;
-		       	ae_pose.position.y = y;
+			ae_pose.position.y = y;
 			ae_pose.position.z = z;
 			ae_pose.orientation.x = 0;
-		       	ae_pose.orientation.y = 0;
+			ae_pose.orientation.y = 0;
 			ae_pose.orientation.z = 0;
 			ae_pose.orientation.w = 1;
 

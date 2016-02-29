@@ -103,42 +103,14 @@ int main(int argc, char **argv)
 				us_vector.setZ(ae_pose.position.z);
 				transform_us.setOrigin(us_vector);
 
-				std::cout << "x of ae_pose orientation  is " << ae_pose.orientation.x  <<std::endl;
-				std::cout << "y of ae_pose orientation  is " << ae_pose.orientation.y  <<std::endl;
-				std::cout << "z of ae_pose orientation  is " << ae_pose.orientation.z  <<std::endl;
-				std::cout << "w of ae_pose orientation  is " << ae_pose.orientation.w  <<std::endl;
-
-				us_quaternion.setX(ae_pose.orientation.x);
 				us_quaternion.setY(ae_pose.orientation.y);
 				us_quaternion.setZ(ae_pose.orientation.z);
 				us_quaternion.setW(ae_pose.orientation.w);
 				transform_us.setRotation(us_quaternion);
 
-				std::cout << "x of transform_us is " << transform_us.getOrigin().x() <<std::endl;
-				std::cout << "y of transform_us is " << transform_us.getOrigin().y() <<std::endl;
-				std::cout << "z of transform_us is " << transform_us.getOrigin().z() <<std::endl;
-				std::cout << "x of transform_us is " << transform_us.getRotation().x() <<std::endl;
-				std::cout << "y of transform_us is " << transform_us.getRotation().y() <<std::endl;
-				std::cout << "z of transform_us is " << transform_us.getRotation().z() <<std::endl;
-				std::cout << "w of transform_us is " << transform_us.getRotation().w() <<std::endl;
-
-				std::cout << "x of transform_bu is " << transform_bu.getOrigin().x() <<std::endl;
-				std::cout << "y of transform_bu is " << transform_bu.getOrigin().y() <<std::endl;
-				std::cout << "z of transform_bu is " << transform_bu.getOrigin().z() <<std::endl;
-				std::cout << "x of transform_bu is " << transform_bu.getRotation().x() <<std::endl;
-				std::cout << "y of transform_bu is " << transform_bu.getRotation().y() <<std::endl;
-				std::cout << "z of transform_bu is " << transform_bu.getRotation().z() <<std::endl;
-				std::cout << "w of transform_bu is " << transform_bu.getRotation().w() <<std::endl;
 
 				// calculate transform_bs
 				transform_bs.mult(transform_bu, transform_us);
-				std::cout << "x of transform_bs is " << transform_bs.getOrigin().x() <<std::endl;
-				std::cout << "y of transform_bs is " << transform_bs.getOrigin().y() <<std::endl;
-				std::cout << "z of transform_bs is " << transform_bs.getOrigin().z() <<std::endl;
-				std::cout << "x of transform_bs is " << transform_bs.getRotation().x() <<std::endl;
-				std::cout << "y of transform_bs is " << transform_bs.getRotation().y() <<std::endl;
-				std::cout << "z of transform_bs is " << transform_bs.getRotation().z() <<std::endl;
-				std::cout << "w of transform_bs is " << transform_bs.getRotation().w() <<std::endl;
 
 				// calculate transform_su
 				transform_su = transform_us.inverse();
@@ -146,17 +118,12 @@ int main(int argc, char **argv)
 				// Calculate the new pose for the end-effector
 				tf::Vector3 v_su = transform_su.getOrigin();
 
-				std::cout << "z of transform_su is " << v_su.getZ() <<std::endl;
 				v_su.setX( 0 );
 				v_su.setY( 0 );
 				transform_su.setOrigin( v_su );
 
-				std::cout << "updated x of bu is" << transform_bu.getOrigin().x() << std::endl;
-
-				std::cout << "x of transform_bs is " << transform_bs.getOrigin().x() << std::endl;
 				transform_be_calc.mult(transform_bs, transform_su);
 
-				std::cout << "x of transform_be_calc is " << transform_be_calc.getOrigin().x() << std::endl;
 				transform_be.mult(transform_be_calc, transform_ue);
 
 				br.sendTransform(tf::StampedTransform(transform_be, ros::Time::now(), "base_link", "future_end_effector"));

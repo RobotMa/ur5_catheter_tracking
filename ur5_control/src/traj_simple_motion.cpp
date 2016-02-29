@@ -383,7 +383,7 @@ int main( int argc, char** argv ){
 		else if (moving) {
 			sensor_msgs::JointState jointstate;
 			jointstate = jointstate_init;
-
+			
 			Eigen::VectorXf evel(6); 
 			double scale;
 			Eigen::Affine3d H_Cpd, H_Spd;
@@ -421,6 +421,7 @@ int main( int argc, char** argv ){
 				} 
 
 			}
+			
 			/*
 			trajectory_msgs::JointTrajectoryPoint point;
 			point.positions = jointstate.position;

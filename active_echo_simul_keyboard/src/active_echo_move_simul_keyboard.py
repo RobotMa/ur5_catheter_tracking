@@ -33,6 +33,7 @@ moveBindings = {
         'm':  0.0002,
         ',': -0.0002,
         'o':  0.000,
+        'h': [],
         }
 
 def getKey():
@@ -58,12 +59,14 @@ if __name__=="__main__":
     rospy.init_node('active_echo_signal_simul_keyboard')
     pub = rospy.Publisher('active_echo_position_topic', Point, queue_size = 5)
     br = tf.TransformBroadcaster() 
+    rate = rospy.Rate(10) 
 
     try:
         print params(x, y, z)
         while(1):
             
             key = getKey()
+            point = Point()
             if key in moveBindings.keys():
                 if key == 'u' or key == 'i':
                     x = x + moveBindings[key]
@@ -73,12 +76,20 @@ if __name__=="__main__":
                     z = z + moveBindings[key]
                 elif key == 'o':
                     print "AE element static"
+                elif key == 'h'
+                    while not rospy.is_shutdown():
+                        x = x + 0.001
+                        point.x = x 
+                        point.y = y
+                        point.z = z
+                        pub.publish(point)
+                        rate.sleep()
                 else:
                     print 'Not valid key stroke'
             else:
                 if (key == '\x03'):
                     break
-            point = Point()
+           
             point.x = x
             point.y = y
             point.z = z
