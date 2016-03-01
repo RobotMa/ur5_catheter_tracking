@@ -44,7 +44,7 @@ int main(int argc, char** argv){
 	double c = 3.1947;
 
 	// US probe parameters
-	double element_w = 0.3; // mm
+	double element_w = 0.45; // mm
 	double AE_SRate = 80*pow(10,6); // hz
 	double SOS = 1480; // m/s
 	int count = 0;

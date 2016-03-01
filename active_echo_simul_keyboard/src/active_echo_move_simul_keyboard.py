@@ -26,15 +26,15 @@ CTRL-C to quit
 
 moveBindings = {
 
-        'u':  0.0002,
-        'i': -0.0002,
-        'j':  0.0002,
-        'k': -0.0002,
-        'm':  0.0002,
-        ',': -0.0002,
-        'o':  0.000,
-        'h': [],
-        }
+    'u':  0.0002,
+    'i': -0.0002,
+    'j':  0.0002,
+    'k': -0.0002,
+    'm':  0.0002,
+    ',': -0.0002,
+    'o':  0.000,
+    'h': [],
+}
 
 def getKey():
     tty.setraw(sys.stdin.fileno())
@@ -55,16 +55,16 @@ def params(x, y, z):
 
 if __name__=="__main__":
     settings = termios.tcgetattr(sys.stdin)
-    
+
     rospy.init_node('active_echo_signal_simul_keyboard')
     pub = rospy.Publisher('active_echo_position_topic', Point, queue_size = 5)
     br = tf.TransformBroadcaster() 
-    rate = rospy.Rate(10) 
+    rate = rospy.Rate(50) 
 
     try:
         print params(x, y, z)
         while(1):
-            
+
             key = getKey()
             point = Point()
             if key in moveBindings.keys():
@@ -76,7 +76,7 @@ if __name__=="__main__":
                     z = z + moveBindings[key]
                 elif key == 'o':
                     print "AE element static"
-                elif key == 'h'
+                elif key == 'h':
                     while not rospy.is_shutdown():
                         x = x + 0.001
                         point.x = x 
@@ -84,12 +84,15 @@ if __name__=="__main__":
                         point.z = z
                         pub.publish(point)
                         rate.sleep()
+                        if (key == '\x03'):
+                            break
+
                 else:
                     print 'Not valid key stroke'
             else:
                 if (key == '\x03'):
                     break
-           
+
             point.x = x
             point.y = y
             point.z = z
@@ -99,17 +102,18 @@ if __name__=="__main__":
             pub.publish(point)
 
             br.sendTransform((x,y,z), 
-                    tf.transformations.quaternion_from_euler(0,0,0),
-                    rospy.Time.now(),
-                    "active_echo_position",
-                    "world")
+                             tf.transformations.quaternion_from_euler(0,0,0),
+                             rospy.Time.now(),
+                             "active_echo_position",
+                             "world")
+            rate.sleep()
     except:
         print 'Unexpected error in try'
 
     finally:
         br.sendTransform((x,y,z), 
-                tf.transformations.quaternion_from_euler(0,0,0),
-                rospy.Time.now(),
-                "active_echo_position",
-                "world")
+                         tf.transformations.quaternion_from_euler(0,0,0),
+                         rospy.Time.now(),
+                         "active_echo_position",
+                         "world")
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)

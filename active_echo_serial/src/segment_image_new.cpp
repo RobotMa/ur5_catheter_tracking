@@ -47,7 +47,7 @@ void segmentCallback( const active_echo_serial::Num::ConstPtr& msg)
 	tf::Transform transform;
 	tf::Quaternion q;
 
-	double element_w = 0.3; // mm small probe : 3 mm & large probe 4.5 mm
+	double element_w = 0.45; // mm small probe : 3 mm & large probe 4.5 mm
 	double AE_SRate = 80*pow(10, 6); // hz
 	double SOS = 1480; // m/s
 	bool broadcast = true;
@@ -62,10 +62,42 @@ void segmentCallback( const active_echo_serial::Num::ConstPtr& msg)
 	double direction = 1;
 	const int tc_upper_bound = 38; // counter threshold
 	const int tc_lower_bound = 5;
+	const int detection_range = 8; // mm
+
+	static double l_ta_e_prev = 0.0;
+	static double l_ta_e_curr = 0.0;
+
+	static double time_prev = ros::Time::now().toSec();
+	static double time_curr = ros::Time::now().toSec();
+	double time_interval = 0.0;
 
 	try {
 
-		y = ceil(msg->l_ta - 64.5)*element_w/1000; // Unit:m
+		
+		std::cout << "l_ta_e_curr is: " << l_ta_e_curr << std::endl;
+
+		time_curr = ros::Time::now().toSec();
+		time_interval = time_curr - time_prev;
+		double l_ta_e_change = l_ta_e_curr - l_ta_e_prev;
+		l_ta_e_prev = l_ta_e_curr;
+
+		std::cout << "time_curr is : " << time_curr << std::endl;
+		std::cout << "time_prev is : " << time_prev << std::endl;
+		std::cout << "l_ta_e_curr - l_ta_e_prev is: " << l_ta_e_change << std::endl;
+		std::cout << "time_interval is: " << time_interval << std::endl;
+
+		l_ta_e_curr = ((double)msg->l_ta - 64.5)/64.5;
+		std::cout << "l_ta_e_curr is: " << l_ta_e_curr << std::endl;
+
+		if (l_ta_e_curr > 0.30){
+			y = 2*ceil(msg->l_ta - 64.5)*element_w/1000; // Unit:m
+		}
+		else{
+			y = ceil(msg->l_ta - 64.5)*element_w/1000 + 0.0*(l_ta_e_curr - l_ta_e_prev)/time_interval; // Unit:m
+		}
+		time_prev = time_curr;
+
+
 		z = -(msg->dly)*(1/AE_SRate)*SOS; // Unit:m
 		if (g_mid_plane == true) {
 
@@ -91,7 +123,7 @@ void segmentCallback( const active_echo_serial::Num::ConstPtr& msg)
 				x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
 			}
 			else if ( msg->tc > 0 && msg->tc < tc_lower_bound ) {
-				x = (2*direction*(tc_upper_bound - msg->tc)*step)/(step_scaler*10000);}
+				x = (direction*(tc_upper_bound - msg->tc)/tc_upper_bound*detection_range/2*step)/(step_scaler*1000);}
 			else { x = 0.0; } // m 
 
 		}
