@@ -5,6 +5,7 @@ import tf
 
 from geometry_msgs.msg import Point
 from active_echo_serial.msg import Num 
+from math import sin 
 
 import sys, select, termios, tty
 
@@ -33,7 +34,10 @@ moveBindings = {
     'm':  0.0002,
     ',': -0.0002,
     'o':  0.000,
-    'h': [],
+    'a': [], # accelerate x step length
+    'd': [], # reset x step length
+    'h': [], # straight line 
+    's': [], # sine wave line
 }
 
 def getKey():
@@ -44,7 +48,7 @@ def getKey():
     return key
 
 # initial position of the active echo point
-x = 0.110 # m
+x = 0.170 # m
 y = 0.425 # m
 z = 0.048 # m
 count = 0
@@ -60,6 +64,8 @@ if __name__=="__main__":
     pub = rospy.Publisher('active_echo_position_topic', Point, queue_size = 5)
     br = tf.TransformBroadcaster() 
     rate = rospy.Rate(50) 
+    angle = 0
+    step = 1
 
     try:
         print params(x, y, z)
@@ -69,20 +75,38 @@ if __name__=="__main__":
             point = Point()
             if key in moveBindings.keys():
                 if key == 'u' or key == 'i':
-                    x = x + moveBindings[key]
+                    x = x + step*moveBindings[key]
                 elif key == 'j' or key == 'k':
                     y = y + moveBindings[key]
                 elif key == 'm' or key == ',':
                     z = z + moveBindings[key]
+                elif key == 'a':
+                    step = 5*step
+                elif key == 'd':
+                    step = 1
                 elif key == 'o':
                     print "AE element static"
                 elif key == 'h':
                     while not rospy.is_shutdown():
-                        x = x + 0.001
+                        x = x + 0.0002
                         point.x = x 
                         point.y = y
                         point.z = z
                         pub.publish(point)
+                        rate.sleep()
+                        if (key == '\x03'):
+                            break
+                elif key == 's':
+                    y_cur = y
+                    while not rospy.is_shutdown():
+                        x = x + 0.0001
+                        y = y_cur + 0.005*sin(angle)
+                        point.x = x 
+                        point.y = y
+                        point.z = z
+                        pub.publish(point)
+                        angle = angle + 0.02
+                        print "angle is %s" % angle
                         rate.sleep()
                         if (key == '\x03'):
                             break

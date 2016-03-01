@@ -123,7 +123,12 @@ void segmentCallback( const active_echo_serial::Num::ConstPtr& msg)
 				x = (sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
 			}
 			else if ( msg->tc > 0 && msg->tc < tc_lower_bound ) {
-				x = (direction*(tc_upper_bound - msg->tc)/tc_upper_bound*detection_range/2*step)/(step_scaler*1000);}
+				x = (direction*(tc_upper_bound - msg->tc)/(double)tc_upper_bound*detection_range/2)/(step_scaler*1000);
+				// x = (tc_lower_bound - msg->tc)/(double)tc_lower_bound*(sqrt(-pow(c,2)*log(msg->tc/a)) + b)/1000/scale; // m
+
+				std::cout << "when tc is small, x will be " << x << std::endl; 
+			}
+
 			else { x = 0.0; } // m 
 
 		}
