@@ -77,9 +77,9 @@ if __name__=="__main__":
                 if key == 'u' or key == 'i':
                     x = x + step*moveBindings[key]
                 elif key == 'j' or key == 'k':
-                    y = y + moveBindings[key]
+                    y = y + step*moveBindings[key]
                 elif key == 'm' or key == ',':
-                    z = z + moveBindings[key]
+                    z = z + step*moveBindings[key]
                 elif key == 'a':
                     step = 5*step
                 elif key == 'd':
@@ -99,8 +99,8 @@ if __name__=="__main__":
                 elif key == 's':
                     y_cur = y
                     while not rospy.is_shutdown():
-                        x = x + 0.0001
-                        y = y_cur + 0.005*sin(angle)
+                        x = x + 0.0002
+                        y = y_cur + 0.01*sin(angle)
                         point.x = x 
                         point.y = y
                         point.z = z
