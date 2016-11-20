@@ -55,11 +55,6 @@ Currently, force feedback is being incorporated into the system and FT150 force 
 
 4. Connect the FTDI cable first to a Windows based computer to see the correctness of the serial port output. Note that one should set the baud rate to be 912600. 
 
-
-## System Setup Problems
-
-1. 
-
 # Current Problems
 > For detailed problems, please refer to each individual ROS package. 
 
